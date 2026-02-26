@@ -1,0 +1,151 @@
+// category dummy data
+{
+   "name" : "electronic",
+   "productId": 2
+  
+}
+
+{
+   "name": "food",
+   "productId": 1
+}
+{
+   "name" : "beauty",
+   "productId": 3
+}
+{
+   "name": "clothes",
+   "productId": 4
+}
+{
+   "name": "toys",
+   "productId": 5
+}
+// dummy data Product
+
+{
+    "name" : "backou tey" ,
+    "color" : "a7mer",
+    "description": "a7la soum fesou9",
+    "stock" :true,
+    "size" : 2,
+    "price" : 4,
+    "quantity" : 100
+}
+{
+    "name" : "sichwar", 
+    "color" : "blue",
+    "description": "a7la soum fesou9",
+    "stock" : true,
+    "size" : 2,
+    "price" : 80,
+    "quantity" : 100
+}
+{
+    "name" : "sbo3 7ommir", 
+    "color" : "a7mer",
+    "description": "a7la soum fesou9",
+    "stock" :true,
+    "size" : 2,
+    "price" : 15,
+    "quantity" : 84
+}
+{
+    "name" : "maryoul 5al3a", 
+    "color" : "abyedh",
+    "description": "a7la soum fesou9",
+    "stock" :true,
+    "size" : 2,
+    "price" : 4,
+    "quantity" : 100
+}
+{
+    "name" : "ball", 
+    "color" : "blue",
+    "description": "a7la soum fesou9",
+    "stock" :true,
+    "size" : 2,
+    "price" : 50,
+    "quantity" : 40
+}
+//dummy data user
+{
+    "username": "yassine-admin" ,
+    "email":  "y1@gmail.com",
+    "phone_number": null,
+    "password": "yassine123",
+    "role" : "admin" 
+
+
+}
+{
+    "username": "ala-admin" ,
+    "email": null ,
+    "phone_number": 52590489 ,
+    "password": "alatheniarjelwehedfel3alem" ,
+    "role" : "amdin"
+//hethy matet3adech why allaho a3lem
+
+}
+{
+    "username": "yassine-client" ,
+    "email": "y2@gmail.com" ,
+    "phone_number": null,
+    "password": "97537371" ,
+    "role" : "client"
+
+
+}
+{
+    "username": "ala-client" ,
+    "email": null ,
+    "phone_number": 97537371 ,
+    "password": "123" ,
+    "role" : "client"
+
+
+}
+{
+    "username": "yassine-seller" ,
+    "email": "y3@gmail.com",
+    "phone_number": null,
+    "password": "789" ,
+    "role" :  "seller"
+
+
+}
+{
+    "username": "ala-seller" ,
+    "email": null ,
+    "phone_number": 45678912 ,
+    "password": "456" ,
+    "role" : "seller"
+
+
+}
+//wishList Dummy data
+
+{
+    "productId": 1 ,
+    "userId": 3
+}
+{
+    "productId": 3 ,
+    "userId": 3
+}
+{
+    "productId": 4 ,
+    "userId": 3
+}
+{
+    "productId": 5 ,
+    "userId": 4
+}
+{
+    "productId": 2 ,
+    "userId": 4
+}
+{
+    "productId": 4 ,
+    "userId": 4
+}
