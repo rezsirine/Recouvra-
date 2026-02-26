@@ -1,67 +1,44 @@
 const connection = require("./index");
-const { Sequelize, DataTypes } = require("sequelize");
-const Client = require("./client");
-const User = require("./user");
+const mongoose = require("mongoose");
 
-const Invoice = connection.define("invoice", {
+const invoiceSchema = new mongoose.Schema({
     number: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
         unique: true
     },
+    client: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Client',
+        required: true
+    },
     amount: {
-        type: DataTypes.DECIMAL(10, 2),
-        allowNull: false,
-        validate: {
-            min: 0
-        }
+        type: Number,
+        required: true,
+        min: 0
     },
     dueDate: {
-        type: DataTypes.DATEONLY,
-        allowNull: false
+        type: Date,
+        required: true
     },
     status: {
-        type: DataTypes.ENUM('unpaid', 'paid', 'overdue', 'pending'),
-        defaultValue: 'unpaid',
-        allowNull: false
+        type: String,
+        enum: ['unpaid', 'paid', 'overdue', 'pending'],
+        default: 'unpaid'
     },
     paidAmount: {
-        type: DataTypes.DECIMAL(10, 2),
-        defaultValue: 0,
-        validate: {
-            min: 0
-        }
+        type: Number,
+        default: 0,
+        min: 0
     },
     paidAt: {
-        type: DataTypes.DATE,
-        allowNull: true
+        type: Date
     },
     description: {
-        type: DataTypes.TEXT,
-        allowNull: true
-    },
-    // Clés étrangères (à définir dans index.js)
-    clientId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'clients',
-            key: 'id'
-        }
+        type: String
     }
 }, {
-    timestamps: true,
-    hooks: {
-        beforeSave: (invoice) => {
-            // Mettre à jour le statut automatiquement
-            if (invoice.paidAmount >= invoice.amount) {
-                invoice.status = 'paid';
-                invoice.paidAt = new Date();
-            } else if (new Date(invoice.dueDate) < new Date() && invoice.status !== 'paid') {
-                invoice.status = 'overdue';
-            }
-        }
-    }
+    timestamps: true
 });
 
-module.exports = Invoice;
+module.exports = mongoose.model("Invoice", invoiceSchema);
