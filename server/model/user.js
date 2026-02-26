@@ -1,31 +1,33 @@
 const connection = require("./index")
-const {Sequelize, DataTypes} = require("sequelize")
+const mongoose = require("mongoose")
 
 
-    const User  = connection.define("user",{
+    const userSchema = new mongoose.Schema({
         username: {
-            type : DataTypes.STRING(45),
-            allowNull: false,
+            type : STRING,
+            required:true,
+            maxlength: 45
         },
         email: {
-            type : DataTypes.STRING,
-            allowNull: true,
+            type : STRING,
+            required:false,
             unique: true,
         },
         phone_number: {
-            type : DataTypes.INTEGER,
-            allowNull: true,
+            type : Number,
+            required:false,
             unique: true,
         },
         password: {
-            type : DataTypes.STRING,
-            allowNull: false,
+            type : STRING,
+            required:true
         },
         role: {
-            type : DataTypes.ENUM(['admin','client','seller']),
-            allowNull: false,
-        },
+            type : String,
+            enum:['admin','client','seller'],
+            required:true
+        }
     })
 
 
-module.exports = User;
+module.exports = mongoose.model("User,userSchema");

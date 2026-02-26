@@ -1,5 +1,5 @@
 
-const  {User}  = require("../model/populate");
+const  User  = require("../model/user");
 // const {User} = require("../model/index");
 
 const jwt = require("jsonwebtoken");
@@ -10,9 +10,8 @@ module.exports = {
   signUp: async (req, res) => {
     try {
       const { username, email, phone_number, password, role } = req.body;
-      const find = await User.findOne({
-        where: { email: email },
-      });
+      const find = await User.findOne({ email },
+      );
       if (find) {
         return res.send("Email already exist");
       }
@@ -34,7 +33,7 @@ module.exports = {
   loginByEmail: async (req, res) => {
     try {
       const { email, password } = req.body;
-      const user = await User.findOne({ where: { email: email } })
+      const user = await User.findOne({email})
       if (!user) {
         return res.send("User does not exist");
       }
@@ -43,7 +42,10 @@ module.exports = {
         return res.send("Password Incorrect");
       }
 
-      const token = jwt.sign(user.dataValues, dotenv.parsed.SECRET_KEY)
+      const token = jwt.sign({ id:user._id, role:user.role },
+        process.env.SECRET_KEY,
+        { expiresIn: "1d" }
+      )
       res.status(200).send(token);
     }
     catch (error) {
@@ -54,7 +56,7 @@ module.exports = {
   loginByPhoneNumber: async (req, res) => {
     try {
       const { phone_number, password } = req.body;
-      const user = await User.findOne({ where: { phone_number: phone_number } })
+      const user = await User.findOne({phone_number })
 
       if (!user) {
         return res.send("User does not exist");
@@ -65,7 +67,11 @@ module.exports = {
       }
 
       console.log(passwordValid)
-      const token = jwt.sign(user.dataValues, dotenv.parsed.SECRET_KEY)
+      const token =  jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.SECRET_KEY,
+        { expiresIn: "1d" }
+      );
       console.log('token: ', token)
       res.status(200).send(token);
     }
@@ -75,7 +81,7 @@ module.exports = {
   },
   getAllUsers: async (req,res)=>{
     try {
-      const all = await User.findAll({include:{all:true}})
+      const all = await User.find().select("-password")
       res.status(200).send(all);
     } catch (error) {
       throw Error(error)
