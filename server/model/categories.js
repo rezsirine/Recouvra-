@@ -1,12 +1,12 @@
-const {Sequelize,DataTypes} = require("sequelize")
-const connection = require("./index")
+// const {Sequelize,DataTypes} = require("sequelize")
+// const connection = require("./index")
 
-    const Categories = connection.define(("categories"),{
-        name: {
-            type : DataTypes.STRING,
-            allowNull: false,
-        }
-    })
+//     const Categories = connection.define(("categories"),{
+//         name: {
+//             type : DataTypes.STRING,
+//             allowNull: false,
+//         }
+//     })
 
 
-module.exports = Categories;
+// module.exports = Categories;

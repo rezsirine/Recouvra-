@@ -1,15 +1,16 @@
-const { Sequelize, DataTypes } = require("sequelize");
-const connection = new Sequelize("commerce", "root", "root", {
-  host: "localhost",
-  dialect: "mysql",
-});
+const mongoose = require("mongoose");
+const connection = async () => {
+  try {
+    await mongoose.connect("mongodb://127.0.0.1:27017/commerce", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
 
-
-
-  connection.authenticate().then(()=> console.log('Connection has been established successfully.'))
-  .catch( (error)=> {
-    console.error('Unable to connect to the database:', error);
-  })
-
+    console.log("MongoDB connection established successfully.");
+  } catch (error) {
+    console.error("Unable to connect to MongoDB:", error);
+    process.exit(1);
+  }
+};
   
 module.exports = connection;
