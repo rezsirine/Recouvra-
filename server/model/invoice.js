@@ -1,5 +1,4 @@
-const connection = require("./index");
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const invoiceSchema = new mongoose.Schema({
     number: {
@@ -41,4 +40,29 @@ const invoiceSchema = new mongoose.Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model("Invoice", invoiceSchema);
+// ✅ MIDDLEWARE CORRIGÉ - sans next() car pas besoin avec async/await
+invoiceSchema.pre('save', async function() {
+    // Utiliser function() au lieu de () => pour avoir accès à 'this'
+    
+    // Si totalement payé
+    if (this.paidAmount >= this.amount) {
+        this.status = 'paid';
+        this.paidAt = new Date();
+    } 
+    // Si en retard et pas payé
+    else if (this.dueDate < new Date() && this.status !== 'paid') {
+        this.status = 'overdue';
+    }
+    // Si partiellement payé
+    else if (this.paidAmount > 0 && this.paidAmount < this.amount) {
+        this.status = 'pending';
+    }
+    // Si impayé et pas en retard
+    else if (this.paidAmount === 0 && this.status !== 'overdue') {
+        this.status = 'unpaid';
+    }
+    
+    // Pas besoin de next() avec async/await
+});
+
+module.exports = mongoose.model('Invoice', invoiceSchema);

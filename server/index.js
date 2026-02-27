@@ -1,10 +1,14 @@
 const express = require('express');
 const cors = require('cors');
- const userRoute = require("./routes/user.routes")
-// const productsRoute = require("./routes/product.routes")
-// const categoriesRoute = require("./routes/categories.routes")
-// const wishListRoute = require("./routes/WishList")
-require('./model/index');
+
+// Import des routes
+const userRoute = require("./routes/user.routes")
+const clientRoute = require("./routes/client.routes")
+const invoiceRoute = require("./routes/invoice.routes")
+const recoveryRoute = require("./routes/recovery.routes")
+
+// IMPORTANT : Importer la connexion MongoDB
+require('./model/index');  // ← Ceci exécutera la connexion
 
 const port = 5000;
 const app = express();
@@ -14,11 +18,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Routes
 app.use("/api/user", userRoute)
-// app.use("/api/products", productsRoute)
-// app.use("/api/categories", categoriesRoute)
-// app.use("/api/wishList",wishListRoute)
+app.use("/api/client", clientRoute)
+app.use("/api/invoice", invoiceRoute)
+app.use("/api/recovery", recoveryRoute)
 
 app.listen(port, ()=> {
-console.log(`listening on ${port}`);
+console.log(`✅ listening on ${port}`);
 });

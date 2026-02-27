@@ -1,5 +1,4 @@
-const connection = require("./index");
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const recoveryActionSchema = new mongoose.Schema({
     invoice: {
@@ -10,7 +9,7 @@ const recoveryActionSchema = new mongoose.Schema({
     agent: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false  // ← Changé de true à false
     },
     type: {
         type: String,
@@ -37,4 +36,4 @@ const recoveryActionSchema = new mongoose.Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model("RecoveryAction", recoveryActionSchema);
+module.exports = mongoose.model('RecoveryAction', recoveryActionSchema);

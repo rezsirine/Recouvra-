@@ -1,11 +1,9 @@
-const connection = require("./index");
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const clientSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true,
-        maxlength: 100
+        required: true
     },
     email: {
         type: String,
@@ -17,8 +15,7 @@ const clientSchema = new mongoose.Schema({
     },
     company: {
         type: String,
-        required: true,
-        maxlength: 100
+        required: true
     },
     siret: {
         type: String,
@@ -32,10 +29,10 @@ const clientSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: false  // ← Changé de true à false
     }
 }, {
     timestamps: true
 });
 
-module.exports = mongoose.model("Client", clientSchema);
+module.exports = mongoose.model('Client', clientSchema);
