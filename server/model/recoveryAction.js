@@ -1,47 +1,39 @@
-const connection = require("./index");
-const { Sequelize, DataTypes } = require("sequelize");
+const mongoose = require('mongoose');
 
-const RecoveryAction = connection.define("recoveryAction", {
+const recoveryActionSchema = new mongoose.Schema({
+    invoice: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Invoice',
+        required: true
+    },
+    agent: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false  // ← Changé de true à false
+    },
     type: {
-        type: DataTypes.ENUM('call', 'email', 'meeting'),
-        allowNull: false
+        type: String,
+        enum: ['call', 'email', 'meeting'],
+        required: true
     },
     description: {
-        type: DataTypes.TEXT,
-        allowNull: false
+        type: String,
+        required: true
     },
     date: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        allowNull: false
+        type: Date,
+        default: Date.now
     },
     outcome: {
-        type: DataTypes.ENUM('pending', 'successful', 'failed', 'rescheduled'),
-        defaultValue: 'pending'
+        type: String,
+        enum: ['pending', 'successful', 'failed', 'rescheduled'],
+        default: 'pending'
     },
     nextAction: {
-        type: DataTypes.DATE,
-        allowNull: true
-    },
-    // Clés étrangères
-    invoiceId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'invoices',
-            key: 'id'
-        }
-    },
-    agentId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'users',
-            key: 'id'
-        }
+        type: Date
     }
 }, {
     timestamps: true
 });
 
-module.exports = RecoveryAction;
+module.exports = mongoose.model('RecoveryAction', recoveryActionSchema);

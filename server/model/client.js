@@ -1,46 +1,38 @@
-const connection = require("./index");
-const { Sequelize, DataTypes } = require("sequelize");
+const mongoose = require('mongoose');
 
-const Client = connection.define("client", {
+const clientSchema = new mongoose.Schema({
     name: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: String,
+        required: true
     },
     email: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: {
-            isEmail: true
-        }
+        type: String,
+        required: true
     },
     phone: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: String,
+        required: true
     },
     company: {
-        type: DataTypes.STRING,
-        allowNull: false
+        type: String,
+        required: true
     },
     siret: {
-        type: DataTypes.STRING,
-        allowNull: false,
+        type: String,
+        required: true,
         unique: true
     },
     address: {
-        type: DataTypes.TEXT,
-        allowNull: false
+        type: String,
+        required: true
     },
-    // Clé étrangère (à définir dans index.js)
-    createdById: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'users',
-            key: 'id'
-        }
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false  // ← Changé de true à false
     }
 }, {
     timestamps: true
 });
 
-module.exports = Client;
+module.exports = mongoose.model('Client', clientSchema);
