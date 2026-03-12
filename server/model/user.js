@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true, maxlength: 100 },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  phone_number: { type: String, required: false, unique: true, sparse: true },
+  phone_number: { type: String, unique: false },
   password: { type: String, required: true, select: false },
   role: { type: String, enum: ["agent", "manager", "admin"], default: "agent" },
   resetPasswordToken: { type: String, select: false },

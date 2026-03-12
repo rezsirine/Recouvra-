@@ -11,7 +11,7 @@ const signToken = (id, role) =>
 const signUp = async (req, res) => {
   try {
     const { name, email, phone_number, password, role } = req.body;
-    const existingUser = await User.findOne({ $or: [{ email }, ...(phone_number ? [{ phone_number }] : [])] });
+    const existingUser = await User.findOne({ $or: [{ email }] });
     if (existingUser) return res.status(400).json({ message: "Utilisateur déjà existant" });
 
     const user = await User.create({ name, email, phone_number, password, role: role || "agent" });

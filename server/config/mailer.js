@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.MAIL_PASS,
   },
 });
-
+//ijzm zsms kckp hhem
 const sendMail = async ({ to, subject, html }) => {
   const mailOptions = {
     from: process.env.MAIL_FROM || "Recouvra+ <noreply@recouvraplus.com>",
