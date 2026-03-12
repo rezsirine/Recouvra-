@@ -43,7 +43,7 @@ const sendPasswordResetEmail = async (email, resetToken, userName) => {
     <body>
       <div class="container">
         <div class="header">
-          <h1>🔐 Recouvra+</h1>
+          <h1> Recouvra+</h1>
           <p>Réinitialisation de mot de passe</p>
         </div>
         <div class="body">
@@ -53,9 +53,8 @@ const sendPasswordResetEmail = async (email, resetToken, userName) => {
             <a href="${resetUrl}" class="btn">Réinitialiser mon mot de passe</a>
           </div>
           <div class="warning">
-            ⏱️ Ce lien expire dans <strong>1 heure</strong>. Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
+            ⏱ Ce lien expire dans <strong>1 heure</strong>. Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
           </div>
-          <p style="margin-top:20px; font-size:13px; color:#9ca3af;">Si le bouton ne fonctionne pas, copiez ce lien : <br><a href="${resetUrl}" style="color:#2563eb;">${resetUrl}</a></p>
         </div>
         <div class="footer">
           &copy; ${new Date().getFullYear()} Recouvra+ — Tous droits réservés
@@ -64,7 +63,7 @@ const sendPasswordResetEmail = async (email, resetToken, userName) => {
     </body>
     </html>
   `;
-  return sendMail({ to: email, subject: "🔐 Réinitialisation de mot de passe - Recouvra+", html });
+  return sendMail({ to: email, subject: " Réinitialisation de mot de passe - Recouvra+", html });
 };
 
 module.exports = { sendMail, sendPasswordResetEmail };
