@@ -382,7 +382,10 @@ const renderInvoices = () => {
   tbody.innerHTML = list.map(inv => `
     <tr>
       <td><strong>${inv.number}</strong></td>
-      <td>${inv.client?.company || inv.client?.name || '—'}</td>
+      <td>
+  <strong>${inv.client?.company || '—'}</strong>
+  ${inv.client?.name ? `<br><small style="color:var(--text-muted)">${inv.client.name}</small>` : ''}
+</td>
       <td>${formatCurrency(inv.amount)}</td>
       <td>${formatCurrency(inv.paidAmount)}</td>
       <td>${formatDate(inv.dueDate)}</td>
@@ -401,9 +404,14 @@ const renderInvoices = () => {
 const editInvoice = (id) => {
   const inv = invoicesData.find(x => x._id === id);
   if (!inv) return;
+  
+  
+  loadClientsForSelect('invoiceClient').then(() => {
+    document.getElementById('invoiceClient').value = inv.client?._id || '';
+  });
+
   document.getElementById('invoiceId').value          = inv._id;
   document.getElementById('invoiceNumber').value      = inv.number;
-  document.getElementById('invoiceClient').value      = inv.client?._id || '';
   document.getElementById('invoiceAmount').value      = inv.amount;
   document.getElementById('invoiceDueDate').value     = inv.dueDate?.substring(0, 10) || '';
   document.getElementById('invoiceDescription').value = inv.description || '';
@@ -416,7 +424,7 @@ const saveInvoice = async (e) => {
   const id = document.getElementById('invoiceId').value;
   const body = {
     number:      document.getElementById('invoiceNumber').value,
-    clientId:    document.getElementById('invoiceClient').value,
+    clientId:    document.getElementById('invoiceClient').value,  // ← était déjà là, vérifier
     amount:      parseFloat(document.getElementById('invoiceAmount').value),
     dueDate:     document.getElementById('invoiceDueDate').value,
     description: document.getElementById('invoiceDescription').value
@@ -427,6 +435,7 @@ const saveInvoice = async (e) => {
     closeModal('invoiceModal');
     document.getElementById('invoiceForm').reset();
     document.getElementById('invoiceId').value = '';
+    document.getElementById('invoiceModalTitle').textContent = 'Nouvelle facture';
     showToast(id ? 'Facture modifiée' : 'Facture créée');
     loadInvoices();
   } catch (err) { showToast(err.message, 'error'); }

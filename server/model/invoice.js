@@ -40,25 +40,8 @@ const invoiceSchema = new mongoose.Schema({
     timestamps: true
 });
 
-invoiceSchema.pre('save', async function() {
-    
-    // Si totalement payé
-    if (this.paidAmount >= this.amount) {
-        this.status = 'paid';
-        this.paidAt = new Date();
-    } 
-    // Si en retard et pas payé
-    else if (this.dueDate < new Date() && this.status !== 'paid') {
-        this.status = 'overdue';
-    }
-    // Si partiellement payé
-    else if (this.paidAmount > 0 && this.paidAmount < this.amount) {
-        this.status = 'pending';
-    }
-    // Si impayé et pas en retard
-    else if (this.paidAmount === 0 && this.status !== 'overdue') {
-        this.status = 'unpaid';
-    }
-});
 
+const invoiceStatusMiddleware = require('../middleware/invoice.middleware');
+
+invoiceStatusMiddleware(invoiceSchema);
 module.exports = mongoose.model('Invoice', invoiceSchema);
