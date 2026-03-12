@@ -3,7 +3,7 @@
     <h2>Gestion des clients</h2>
     <p>Gérez votre portefeuille clients</p>
   </div>
-  <button class="btn btn-primary" onclick="openModal('createModal')">
+  <button class="btn btn-primary" onclick="openModal('clientModal')">
     <i class="fas fa-plus"></i> Nouveau client
   </button>
 </div>
@@ -11,16 +11,16 @@
 <div class="card">
   <div class="card-header">
     <div class="filter-bar" style="margin:0">
-      <input type="text" id="searchInput" class="form-control search-input" placeholder="Rechercher un client..." onkeyup="filterClients()" />
+      <input type="text" id="clientSearch" class="form-control search-input" 
+             placeholder="Rechercher un client..." onkeyup="filterClients()" />
     </div>
-    <span id="clientCount" class="badge badge-blue">0 client(s)</span>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table">
         <thead>
           <tr>
-            <th>Entreprise</th><th>Contact</th><th>Email</th><th>Téléphone</th><th>SIRET</th><th>Actions</th>
+            <th>Nom</th><th>Entreprise</th><th>Email</th><th>Téléphone</th><th>SIRET</th><th>Actions</th>
           </tr>
         </thead>
         <tbody id="clientsTable">
@@ -31,156 +31,45 @@
   </div>
 </div>
 
-<!-- Modal Créer -->
-<div class="modal-overlay" id="createModal">
+<!-- Modal Créer / Modifier -->
+<div class="modal-overlay" id="clientModal">
   <div class="modal">
     <div class="modal-header">
-      <h3><i class="fas fa-user-plus"></i> Nouveau client</h3>
-      <button class="modal-close" onclick="closeModal('createModal')"><i class="fas fa-times"></i></button>
+      <h3><i class="fas fa-user"></i> <span id="modalTitle">Nouveau client</span></h3>
+      <button class="modal-close" onclick="closeModal('clientModal')"><i class="fas fa-times"></i></button>
     </div>
-    <div id="createAlert"></div>
-    <form id="createForm" onsubmit="createClient(event)">
+    <form id="clientForm" onsubmit="saveClient(event)">
+      <input type="hidden" id="clientId" />
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div class="form-group"><label class="form-label">Nom *</label><input type="text" name="name" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Entreprise *</label><input type="text" name="company" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Téléphone *</label><input type="tel" name="phone" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">SIRET (14 chiffres) *</label><input type="text" name="siret" class="form-control" maxlength="14" pattern="[0-9]{14}" required /></div>
-        <div class="form-group" style="grid-column:span 2"><label class="form-label">Adresse *</label><input type="text" name="address" class="form-control" required /></div>
+        <div class="form-group">
+          <label class="form-label">Nom *</label>
+          <input type="text" id="clientName" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Entreprise *</label>
+          <input type="text" id="clientCompany" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input type="email" id="clientEmail" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Téléphone *</label>
+          <input type="tel" id="clientPhone" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">SIRET (14 chiffres) *</label>
+          <input type="text" id="clientSiret" class="form-control" maxlength="14" pattern="[0-9]{14}" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Adresse *</label>
+          <input type="text" id="clientAddress" class="form-control" required />
+        </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('createModal')">Annuler</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('clientModal')">Annuler</button>
         <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
       </div>
     </form>
   </div>
 </div>
-
-<!-- Modal Modifier -->
-<div class="modal-overlay" id="editModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3><i class="fas fa-edit"></i> Modifier client</h3>
-      <button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button>
-    </div>
-    <div id="editAlert"></div>
-    <form id="editForm" onsubmit="updateClient(event)">
-      <input type="hidden" id="editClientId" />
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div class="form-group"><label class="form-label">Nom</label><input type="text" id="editName" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Entreprise</label><input type="text" id="editCompany" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Email</label><input type="email" id="editEmail" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Téléphone</label><input type="tel" id="editPhone" class="form-control" required /></div>
-        <div class="form-group" style="grid-column:span 2"><label class="form-label">Adresse</label><input type="text" id="editAddress" class="form-control" required /></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('editModal')">Annuler</button>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Mettre à jour</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<script>
-const token = localStorage.getItem('token');
-if (!token) window.location.href = '/login';
-
-let clientsList = [];
-
-async function apiCall(endpoint, options = {}) {
-  const res = await fetch('/api' + endpoint, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...options.headers }
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Erreur API');
-  return data;
-}
-
-async function loadClientsPage() {
-  try {
-    const data = await apiCall('/client/getAll');
-    clientsList = data.data || [];
-    document.getElementById('clientCount').textContent = clientsList.length + ' client(s)';
-    renderClientsPage(clientsList);
-  } catch (e) {
-    document.getElementById('clientsTable').innerHTML = `<tr><td colspan="6" class="text-center text-danger">${e.message}</td></tr>`;
-  }
-}
-
-function renderClientsPage(list) {
-  const tbody = document.getElementById('clientsTable');
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Aucun client</td></tr>'; return; }
-  tbody.innerHTML = list.map(c => `<tr>
-    <td><strong>${c.company}</strong></td>
-    <td>${c.name}</td>
-    <td><a href="mailto:${c.email}" class="link-primary">${c.email}</a></td>
-    <td>${c.phone}</td>
-    <td><span class="badge badge-gray">${c.siret}</span></td>
-    <td><div style="display:flex;gap:6px">
-      <button class="btn btn-sm btn-outline" onclick="editClientPage('${c._id}')"><i class="fas fa-edit"></i></button>
-      <button class="btn btn-sm btn-danger" onclick="deleteClientPage('${c._id}')"><i class="fas fa-trash"></i></button>
-    </div></td>
-  </tr>`).join('');
-}
-
-function filterClients() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  renderClientsPage(q ? clientsList.filter(c => (c.name+c.company+c.email+c.siret).toLowerCase().includes(q)) : clientsList);
-}
-
-async function createClient(e) {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target).entries());
-  try {
-    await apiCall('/client/create', { method: 'POST', body: JSON.stringify(data) });
-    showAlert('createAlert', 'Client créé !', 'success');
-    e.target.reset();
-    setTimeout(() => { closeModal('createModal'); loadClientsPage(); }, 800);
-  } catch (err) { showAlert('createAlert', err.message, 'danger'); }
-}
-
-function editClientPage(id) {
-  const c = clientsList.find(x => x._id === id);
-  if (!c) return;
-  document.getElementById('editClientId').value = c._id;
-  document.getElementById('editName').value    = c.name || '';
-  document.getElementById('editCompany').value = c.company || '';
-  document.getElementById('editEmail').value   = c.email || '';
-  document.getElementById('editPhone').value   = c.phone || '';
-  document.getElementById('editAddress').value = c.address || '';
-  openModal('editModal');
-}
-
-async function updateClient(e) {
-  e.preventDefault();
-  const id = document.getElementById('editClientId').value;
-  const data = {
-    name:    document.getElementById('editName').value,
-    company: document.getElementById('editCompany').value,
-    email:   document.getElementById('editEmail').value,
-    phone:   document.getElementById('editPhone').value,
-    address: document.getElementById('editAddress').value
-  };
-  try {
-    await apiCall(`/client/update/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-    showAlert('editAlert', 'Client mis à jour !', 'success');
-    setTimeout(() => { closeModal('editModal'); loadClientsPage(); }, 800);
-  } catch (err) { showAlert('editAlert', err.message, 'danger'); }
-}
-
-async function deleteClientPage(id) {
-  if (!confirm('Supprimer ce client ?')) return;
-  try { await apiCall(`/client/delete/${id}`, { method: 'DELETE' }); loadClientsPage(); }
-  catch (e) { alert(e.message); }
-}
-
-function showAlert(id, msg, type) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
-  setTimeout(() => el.innerHTML = '', 4000);
-}
-
-loadClientsPage();
-</script>

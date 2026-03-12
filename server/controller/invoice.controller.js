@@ -39,8 +39,14 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
   try {
-    const { number, amount, dueDate, description } = req.body;
-    const invoice = await Invoice.findByIdAndUpdate(req.params.id, { number, amount, dueDate, description }, { new: true, runValidators: true });
+    const { number, amount, dueDate, description, clientId } = req.body;  // ← ajouter clientId
+    const updateData = { number, amount, dueDate, description };
+    if (clientId) updateData.client = clientId;  // ← ajouter cette ligne
+    const invoice = await Invoice.findByIdAndUpdate(
+      req.params.id, 
+      updateData, 
+      { new: true, runValidators: true }
+    );
     if (!invoice) return res.status(404).json({ message: "Facture non trouvée" });
     res.json({ message: "Facture modifiée", invoice });
   } catch (error) {
@@ -65,7 +71,17 @@ const registerPayment = async (req, res) => {
     const { amount } = req.body;
     const invoice = await Invoice.findById(req.params.id);
     if (!invoice) return res.status(404).json({ message: "Facture non trouvée" });
-    invoice.paidAmount = (invoice.paidAmount || 0) + Number(amount);
+    
+    const newPaidAmount = (invoice.paidAmount || 0) + Number(amount);
+    
+    
+    if (newPaidAmount > invoice.amount) {
+      return res.status(400).json({ 
+        message: `Montant trop élevé. Reste à payer : ${invoice.amount - invoice.paidAmount} €` 
+      });
+    }
+    
+    invoice.paidAmount = newPaidAmount;
     await invoice.save();
     res.json({ success: true, message: "Paiement enregistré", invoice });
   } catch (error) {

@@ -4,14 +4,39 @@
     <div class="stat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
     <div class="stat-info">
       <span class="stat-label">Total Factures</span>
-      <span class="stat-value" id="totalInvoices">0</span>
+      <span class="stat-value" id="statTotal">0</span>
+    </div>
+  </div>
+  <div class="stat-card stat-card-green">
+    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+    <div class="stat-info">
+      <span class="stat-label">Payées</span>
+      <span class="stat-value" id="statPaid">0</span>
     </div>
   </div>
   <div class="stat-card stat-card-red">
     <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
     <div class="stat-info">
       <span class="stat-label">En Retard</span>
-      <span class="stat-value" id="overdueInvoices">0</span>
+      <span class="stat-value" id="statOverdue">0</span>
+    </div>
+  </div>
+  <div class="stat-card stat-card-orange">
+    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+    <div class="stat-info">
+      <span class="stat-label">En cours</span>
+      <span class="stat-value" id="statPending">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- Montants -->
+<div class="stats-grid" style="margin-top:16px">
+  <div class="stat-card stat-card-blue">
+    <div class="stat-icon"><i class="fas fa-coins"></i></div>
+    <div class="stat-info">
+      <span class="stat-label">Montant Total</span>
+      <span class="stat-value" id="totalAmount">0 €</span>
     </div>
   </div>
   <div class="stat-card stat-card-green">
@@ -42,10 +67,10 @@
   </div>
   <div class="card">
     <div class="card-header">
-      <h3><i class="fas fa-tasks"></i> Actions de recouvrement</h3>
+      <h3><i class="fas fa-tasks"></i> Actions de recouvrement à venir</h3>
     </div>
     <div class="card-body">
-      <canvas id="recoveryChart" height="200"></canvas>
+      <div id="recentActions"></div>
     </div>
   </div>
 </div>
@@ -54,17 +79,15 @@
 <div class="card mt-4">
   <div class="card-header">
     <h3><i class="fas fa-exclamation-circle text-danger"></i> Factures en retard</h3>
-    <a href="/invoices?status=overdue" class="btn btn-sm btn-outline">Voir tout</a>
+    <a href="/invoices" class="btn btn-sm btn-outline">Voir tout</a>
   </div>
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table">
         <thead>
-          <tr>
-            <th>N° Facture</th><th>Client</th><th>Montant</th><th>Échéance</th><th>Actions</th>
-          </tr>
+          <tr><th>N° Facture</th><th>Client</th><th>Montant</th><th>Échéance</th><th>Actions</th></tr>
         </thead>
-        <tbody id="overdueTable">
+        <tbody id="overdueList">
           <tr><td colspan="5" class="text-center">Chargement...</td></tr>
         </tbody>
       </table>
@@ -74,80 +97,32 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-async function loadDashboard() {
-  const token = localStorage.getItem('token');
-  if (!token) { window.location.href = '/login'; return; }
-
-  async function apiFetch(endpoint) {
-    try {
-      const res = await fetch('/api' + endpoint, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (res.status === 401) { window.location.href = '/login'; return null; }
-      return await res.json();
-    } catch (e) { console.error('API Error:', e); return null; }
+(function() {
+  function drawCharts() {
+    const token = localStorage.getItem('token');
+    fetch('/api/invoice/stats', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(r => r.json())
+    .then(stats => {
+      const ctx1 = document.getElementById('invoiceChart')?.getContext('2d');
+      if (ctx1 && stats) {
+        new Chart(ctx1, {
+          type: 'doughnut',
+          data: {
+            labels: ['Payées', 'Impayées', 'En retard', 'En cours'],
+            datasets: [{
+              data: [stats.paid||0, stats.unpaid||0, stats.overdue||0, stats.pending||0],
+              backgroundColor: ['#10b981','#3b82f6','#ef4444','#f59e0b'],
+              borderWidth: 0
+            }]
+          },
+          options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
+        });
+      }
+    });
   }
 
-  function formatCurrency(amount) {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(amount || 0);
-  }
-  function formatDate(d) {
-    return d ? new Date(d).toLocaleDateString('fr-FR') : '—';
-  }
-
-  // Stats factures
-  const stats = await apiFetch('/invoice/stats');
-  if (stats) {
-    document.getElementById('totalInvoices').textContent  = stats.total || 0;
-    document.getElementById('overdueInvoices').textContent = stats.overdue || 0;
-    document.getElementById('totalPaid').textContent      = formatCurrency(stats.totalPaid);
-    document.getElementById('totalDue').textContent       = formatCurrency(stats.totalDue);
-
-    const ctx1 = document.getElementById('invoiceChart')?.getContext('2d');
-    if (ctx1) {
-      new Chart(ctx1, {
-        type: 'doughnut',
-        data: {
-          labels: ['Payées', 'Impayées', 'En retard', 'En cours'],
-          datasets: [{ data: [stats.paid||0, stats.unpaid||0, stats.overdue||0, stats.pending||0], backgroundColor: ['#10b981','#3b82f6','#ef4444','#f59e0b'], borderWidth: 0 }]
-        },
-        options: { plugins: { legend: { position: 'bottom' } }, cutout: '65%' }
-      });
-    }
-  }
-
-  // Stats recouvrement
-  const recoveryStats = await apiFetch('/recovery/stats');
-  if (recoveryStats?.byOutcome) {
-    const o = recoveryStats.byOutcome;
-    const ctx2 = document.getElementById('recoveryChart')?.getContext('2d');
-    if (ctx2) {
-      new Chart(ctx2, {
-        type: 'bar',
-        data: {
-          labels: ['En attente', 'Réussi', 'Échoué', 'Reporté'],
-          datasets: [{ label: 'Actions', data: [o.pending||0, o.successful||0, o.failed||0, o.rescheduled||0], backgroundColor: ['#3b82f6','#10b981','#ef4444','#f59e0b'], borderRadius: 6 }]
-        },
-        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-      });
-    }
-  }
-
-  // Factures en retard
-  const overdue = await apiFetch('/invoice/overdue');
-  const tbody = document.getElementById('overdueTable');
-  const list = overdue?.data || [];
-  tbody.innerHTML = list.length === 0
-    ? '<tr><td colspan="5" class="text-center">Aucune facture en retard 🎉</td></tr>'
-    : list.slice(0, 5).map(inv => `
-        <tr>
-          <td><span class="badge badge-blue">${inv.number || '—'}</span></td>
-          <td>${inv.client?.company || inv.client?.name || '—'}</td>
-          <td class="text-danger fw-bold">${formatCurrency(inv.amount)}</td>
-          <td>${formatDate(inv.dueDate)}</td>
-          <td><a href="/invoices" class="btn btn-sm btn-outline"><i class="fas fa-eye"></i></a></td>
-        </tr>`).join('');
-}
-
-document.addEventListener('DOMContentLoaded', loadDashboard);
+  setTimeout(drawCharts, 500);
+})();
 </script>
