@@ -3,20 +3,17 @@
     <h2>Gestion des factures</h2>
     <p>Suivez et gérez vos factures</p>
   </div>
-  <button class="btn btn-primary" onclick="openModal('createInvoiceModal')">
+  <button class="btn btn-primary" onclick="openModal('invoiceModal')">
     <i class="fas fa-plus"></i> Nouvelle facture
   </button>
 </div>
 
 <div class="filter-bar">
-  <input type="text" id="searchInput" class="form-control search-input" placeholder="Rechercher..." oninput="filterInvoices()" />
-  <select id="statusFilter" class="form-control" onchange="filterInvoices()" style="width:auto">
-    <option value="">Tous les statuts</option>
-    <option value="unpaid">Impayée</option>
-    <option value="paid">Payée</option>
-    <option value="overdue">En retard</option>
-    <option value="pending">En cours</option>
-  </select>
+  <button class="filter-btn active" onclick="filterByStatus('all', this)">Toutes</button>
+  <button class="filter-btn" onclick="filterByStatus('unpaid', this)">Impayées</button>
+  <button class="filter-btn" onclick="filterByStatus('paid', this)">Payées</button>
+  <button class="filter-btn" onclick="filterByStatus('overdue', this)">En retard</button>
+  <button class="filter-btn" onclick="filterByStatus('pending', this)">En cours</button>
 </div>
 
 <div class="card">
@@ -34,28 +31,41 @@
   </div>
 </div>
 
-<!-- Modal Créer Facture -->
-<div class="modal-overlay" id="createInvoiceModal">
+<!-- Modal Créer/Modifier Facture -->
+<div class="modal-overlay" id="invoiceModal">
   <div class="modal">
     <div class="modal-header">
-      <h3><i class="fas fa-file-plus"></i> Nouvelle facture</h3>
-      <button class="modal-close" onclick="closeModal('createInvoiceModal')"><i class="fas fa-times"></i></button>
+      <h3><i class="fas fa-file-invoice"></i> <span id="invoiceModalTitle">Nouvelle facture</span></h3>
+      <button class="modal-close" onclick="closeModal('invoiceModal')"><i class="fas fa-times"></i></button>
     </div>
-    <div id="invoiceAlert"></div>
-    <form id="createInvoiceForm" onsubmit="createInvoice(event)">
+    <form id="invoiceForm" onsubmit="saveInvoice(event)">
+      <input type="hidden" id="invoiceId" />
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div class="form-group"><label class="form-label">N° Facture *</label><input type="text" name="number" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Montant (€) *</label><input type="number" name="amount" class="form-control" min="0" step="0.01" required /></div>
-        <div class="form-group"><label class="form-label">Client *</label>
-          <select name="clientId" id="clientSelect" class="form-control" required>
+        <div class="form-group">
+          <label class="form-label">N° Facture *</label>
+          <input type="text" id="invoiceNumber" class="form-control" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Montant (€) *</label>
+          <input type="number" id="invoiceAmount" class="form-control" min="0" step="0.01" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Client *</label>
+          <select id="invoiceClient" class="form-control" required>
             <option value="">Sélectionner un client...</option>
           </select>
         </div>
-        <div class="form-group"><label class="form-label">Échéance *</label><input type="date" name="dueDate" class="form-control" required /></div>
-        <div class="form-group" style="grid-column:span 2"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2"></textarea></div>
+        <div class="form-group">
+          <label class="form-label">Échéance *</label>
+          <input type="date" id="invoiceDueDate" class="form-control" required />
+        </div>
+        <div class="form-group" style="grid-column:span 2">
+          <label class="form-label">Description</label>
+          <textarea id="invoiceDescription" class="form-control" rows="2"></textarea>
+        </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('createInvoiceModal')">Annuler</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('invoiceModal')">Annuler</button>
         <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
       </div>
     </form>
@@ -69,113 +79,17 @@
       <h3><i class="fas fa-euro-sign"></i> Enregistrer un paiement</h3>
       <button class="modal-close" onclick="closeModal('paymentModal')"><i class="fas fa-times"></i></button>
     </div>
-    <div id="paymentAlert"></div>
-    <form id="paymentForm">
+    <form id="paymentForm" onsubmit="registerPayment(event)">
       <input type="hidden" id="paymentInvoiceId" />
       <div class="form-group">
+        <p id="paymentInfo" style="margin-bottom:12px;color:var(--text-muted)"></p>
         <label class="form-label">Montant du paiement (€)</label>
         <input type="number" id="paymentAmount" class="form-control" min="0.01" step="0.01" required />
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline" onclick="closeModal('paymentModal')">Annuler</button>
-        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Valider</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Valider</button>
       </div>
     </form>
   </div>
 </div>
-
-<script>
-const token = localStorage.getItem('token');
-if (!token) window.location.href = '/login';
-
-let invoices = [];
-
-async function api(endpoint, options = {}) {
-  const res = await fetch('/api' + endpoint, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...options.headers }
-  });
-  return res.json();
-}
-
-function formatCurrency(v) { return new Intl.NumberFormat('fr-FR', { style:'currency', currency:'EUR', minimumFractionDigits:0 }).format(v||0); }
-function formatDate(d) { return d ? new Date(d).toLocaleDateString('fr-FR') : '—'; }
-function statusBadge(s) {
-  const map = { paid:'success', unpaid:'blue', overdue:'danger', pending:'warning' };
-  const label = { paid:'Payée', unpaid:'Impayée', overdue:'En retard', pending:'En cours' };
-  return `<span class="badge badge-${map[s]||'gray'}">${label[s]||s}</span>`;
-}
-
-async function loadInvoices() {
-  const data = await api('/invoice/getAll');
-  invoices = data.data || [];
-  renderInvoices(invoices);
-
-  // Charger clients pour le select
-  const cData = await api('/client/getAll');
-  const sel = document.getElementById('clientSelect');
-  (cData.data || []).forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c._id;
-    opt.textContent = `${c.company} — ${c.name}`;
-    sel.appendChild(opt);
-  });
-}
-
-function renderInvoices(list) {
-  const tbody = document.getElementById('invoicesTable');
-  tbody.innerHTML = !list.length ? '<tr><td colspan="7" class="text-center text-muted">Aucune facture</td></tr>'
-    : list.map(inv => `<tr>
-        <td><strong>${inv.number}</strong></td>
-        <td>${inv.client?.company || inv.client?.name || '—'}</td>
-        <td class="fw-bold">${formatCurrency(inv.amount)}</td>
-        <td>${formatCurrency(inv.paidAmount)}</td>
-        <td>${formatDate(inv.dueDate)}</td>
-        <td>${statusBadge(inv.status)}</td>
-        <td><div style="display:flex;gap:6px">
-          <button class="btn btn-sm btn-primary" onclick="openPayment('${inv._id}')"><i class="fas fa-euro-sign"></i></button>
-          <button class="btn btn-sm btn-danger" onclick="deleteInvoice('${inv._id}')"><i class="fas fa-trash"></i></button>
-        </div></td>
-      </tr>`).join('');
-}
-
-function filterInvoices() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const s = document.getElementById('statusFilter').value;
-  renderInvoices(invoices.filter(inv => (!s || inv.status === s) && (!q || (inv.number+' '+(inv.client?.company||'')).toLowerCase().includes(q))));
-}
-
-async function createInvoice(e) {
-  e.preventDefault();
-  const data = Object.fromEntries(new FormData(e.target).entries());
-  const res = await api('/invoice/create', { method: 'POST', body: JSON.stringify(data) });
-  if (res.invoice) { closeModal('createInvoiceModal'); e.target.reset(); loadInvoices(); }
-  else document.getElementById('invoiceAlert').innerHTML = `<div class="alert alert-danger">${res.message||'Erreur'}</div>`;
-}
-
-function openPayment(id) {
-  document.getElementById('paymentInvoiceId').value = id;
-  document.getElementById('paymentAmount').value = '';
-  openModal('paymentModal');
-}
-
-document.getElementById('paymentForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const id = document.getElementById('paymentInvoiceId').value;
-  const amount = document.getElementById('paymentAmount').value;
-  const res = await api('/invoice/payment/' + id, { method: 'POST', body: JSON.stringify({ amount: Number(amount) }) });
-  if (res.success) { closeModal('paymentModal'); loadInvoices(); }
-  else document.getElementById('paymentAlert').innerHTML = `<div class="alert alert-danger">${res.message||'Erreur'}</div>`;
-});
-
-async function deleteInvoice(id) {
-  if (!confirm('Supprimer cette facture ?')) return;
-  await api('/invoice/delete/' + id, { method: 'DELETE' });
-  loadInvoices();
-}
-
-function openModal(id)  { document.getElementById(id).classList.add('active'); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-document.addEventListener('DOMContentLoaded', loadInvoices);
-</script>
