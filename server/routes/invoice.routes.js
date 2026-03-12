@@ -1,20 +1,37 @@
-const express = require('express')
-const invoiceController = require('../controller/invoice.controller')
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
+const ctrl = require("../controller/invoice.controller");
 
-// Routes GET
-router.get("/getAll", invoiceController.getAll)
-router.get("/get/:id", invoiceController.getOne)
-router.get("/overdue", invoiceController.getOverdueInvoices)
-router.get("/stats", invoiceController.getInvoiceStats)
+/**
+ * @swagger
+ * /invoice/getAll:
+ *   get:
+ *     summary: Liste toutes les factures
+ *     tags: [Factures]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [unpaid, paid, overdue, pending]
+ *     responses:
+ *       200:
+ *         description: Liste des factures
+ * /invoice/stats:
+ *   get:
+ *     summary: Statistiques des factures
+ *     tags: [Factures]
+ *     responses:
+ *       200:
+ *         description: Statistiques
+ */
+router.get("/getAll", ctrl.getAll);
+router.get("/get/:id", ctrl.getOne);
+router.get("/overdue", ctrl.getOverdueInvoices);
+router.get("/stats", ctrl.getInvoiceStats);
+router.post("/create", ctrl.create);
+router.post("/payment/:id", ctrl.registerPayment);
+router.put("/update/:id", ctrl.update);
+router.delete("/delete/:id", ctrl.delete);
 
-// Routes POST
-router.post("/create", invoiceController.create)
-router.post("/payment/:id", invoiceController.registerPayment)  
-// Routes PUT
-router.put("/update/:id", invoiceController.update)
-
-// Routes DELETE
-router.delete("/delete/:id", invoiceController.delete)
-
-module.exports = router
+module.exports = router;

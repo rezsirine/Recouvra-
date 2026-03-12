@@ -1,0 +1,17 @@
+<header class="topbar">
+  <button class="sidebar-toggle" id="sidebarToggle">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div class="topbar-title">
+    <h1 class="page-title"><%= typeof title !== 'undefined' ? title : 'Dashboard' %></h1>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-icon" title="Notifications">
+      <i class="fas fa-bell"></i>
+      <span class="notification-dot"></span>
+    </button>
+    <div class="topbar-user">
+      <div class="user-avatar-sm"><%= typeof user !== 'undefined' && user.name ? user.name.charAt(0).toUpperCase() : 'U' %></div>
+    </div>
+  </div>
+</header>

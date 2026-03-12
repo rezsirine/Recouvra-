@@ -40,9 +40,7 @@ const invoiceSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// ✅ MIDDLEWARE CORRIGÉ - sans next() car pas besoin avec async/await
 invoiceSchema.pre('save', async function() {
-    // Utiliser function() au lieu de () => pour avoir accès à 'this'
     
     // Si totalement payé
     if (this.paidAmount >= this.amount) {
@@ -61,8 +59,6 @@ invoiceSchema.pre('save', async function() {
     else if (this.paidAmount === 0 && this.status !== 'overdue') {
         this.status = 'unpaid';
     }
-    
-    // Pas besoin de next() avec async/await
 });
 
 module.exports = mongoose.model('Invoice', invoiceSchema);

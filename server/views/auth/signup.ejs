@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inscription — Recouvra+</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-body">
+<div class="auth-container auth-centered" style="min-height:100vh; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);">
+  <div class="auth-card" style="max-width:480px;">
+    <div class="auth-logo-sm">
+      <i class="fas fa-chart-line"></i>
+      <span>Recouvra<span>+</span></span>
+    </div>
+    <div class="auth-header">
+      <h2>Créer un compte</h2>
+      <p>Rejoignez Recouvra+ et gérez votre recouvrement</p>
+    </div>
+
+    <div id="alertMsg" class="alert" style="display:none;"></div>
+
+    <form id="signupForm" onsubmit="handleSignup(event)" class="auth-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom complet *</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user"></i>
+            <input type="text" id="name" placeholder="Jean Dupont" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Rôle *</label>
+          <div class="input-wrapper">
+            <i class="fas fa-shield-alt"></i>
+            <select id="role" style="padding-left:40px; width:100%; border:1.5px solid #e2e8f0; border-radius:8px; padding:11px 14px 11px 40px; font-size:14px; outline:none; font-family:inherit; background:white; color:#1e293b;">
+              <option value="agent">Agent</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <div class="input-wrapper">
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="email" placeholder="votre@email.com" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Téléphone</label>
+        <div class="input-wrapper">
+          <i class="fas fa-phone"></i>
+          <input type="tel" id="phone" placeholder="+33 6 12 34 56 78" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Mot de passe *</label>
+        <div class="input-wrapper">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="••••••••" required minlength="6" />
+        </div>
+      </div>
+      <button type="submit" class="btn-primary btn-full" id="signupBtn">
+        <span class="btn-text">Créer le compte</span>
+        <span class="btn-loader" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
+      </button>
+    </form>
+
+    <p class="auth-switch">Déjà un compte ? <a href="/login">Se connecter</a></p>
+  </div>
+</div>
+<script>
+const handleSignup = async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('signupBtn');
+  btn.querySelector('.btn-text').style.display = 'none';
+  btn.querySelector('.btn-loader').style.display = 'block';
+  try {
+    const res = await fetch('/api/user/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone_number: document.getElementById('phone').value || undefined,
+        password: document.getElementById('password').value,
+        role: document.getElementById('role').value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    localStorage.setItem('token', data.token);
+    location.href = '/dashboard';
+  } catch (err) {
+    const el = document.getElementById('alertMsg');
+    el.className = 'alert alert-error';
+    el.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + err.message;
+    el.style.display = 'flex';
+    btn.querySelector('.btn-text').style.display = 'block';
+    btn.querySelector('.btn-loader').style.display = 'none';
+  }
+};
+</script>
+</body>
+</html>

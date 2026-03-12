@@ -1,165 +1,116 @@
-const User = require('../model/user');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const User = require("../model/user");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { sendPasswordResetEmail } = require("../config/mailer");
 
-// Inscription
+const signToken = (id, role) =>
+  jwt.sign({ id, role }, process.env.JWT_SECRET || "secret", {
+    expiresIn: process.env.JWT_EXPIRE || "7d",
+  });
+
 const signUp = async (req, res) => {
-    try {
-        const { name, email, phone_number, password, role } = req.body;
-        
-        const existingUser = await User.findOne({ 
-            $or: [{ email }, { phone_number }] 
-        });
-        
-        if (existingUser) {
-            return res.status(400).json({ message: 'Utilisateur déjà existant' });
-        }
+  try {
+    const { name, email, phone_number, password, role } = req.body;
+    const existingUser = await User.findOne({ $or: [{ email }, ...(phone_number ? [{ phone_number }] : [])] });
+    if (existingUser) return res.status(400).json({ message: "Utilisateur déjà existant" });
 
-        const user = new User({
-            name,
-            email,
-            phone_number,
-            password,
-            role: role || 'agent'
-        });
-
-        await user.save();
-
-        const token = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.JWT_SECRET || 'secret',
-            { expiresIn: '7d' }
-        );
-
-        res.status(201).json({
-            message: 'Utilisateur créé',
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                phone_number: user.phone_number,
-                role: user.role
-            },
-            token
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    const user = await User.create({ name, email, phone_number, password, role: role || "agent" });
+    const token = signToken(user._id, user.role);
+    res.status(201).json({ message: "Utilisateur créé", user: { id: user._id, name: user.name, email: user.email, role: user.role }, token });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// Connexion par email
 const loginByEmail = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        
-        const user = await User.findOne({ email }).select('+password');
-        if (!user) {
-            return res.status(401).json({ message: 'Email ou mot de passe incorrect' });
-        }
-
-        const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) {
-            return res.status(401).json({ message: 'Email ou mot de passe incorrect' });
-        }
-
-        const token = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.JWT_SECRET || 'secret',
-            { expiresIn: '7d' }
-        );
-
-        res.json({
-            message: 'Connexion réussie',
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                phone_number: user.phone_number,
-                role: user.role
-            },
-            token
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email }).select("+password");
+    if (!user || !(await user.comparePassword(password)))
+      return res.status(401).json({ message: "Email ou mot de passe incorrect" });
+    const token = signToken(user._id, user.role);
+    res.json({ message: "Connexion réussie", user: { id: user._id, name: user.name, email: user.email, role: user.role }, token });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// Connexion par téléphone
 const loginByPhoneNumber = async (req, res) => {
-    try {
-        const { phone_number, password } = req.body;
-        
-        const user = await User.findOne({ phone_number }).select('+password');
-        if (!user) {
-            return res.status(401).json({ message: 'Numéro ou mot de passe incorrect' });
-        }
-
-        const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) {
-            return res.status(401).json({ message: 'Numéro ou mot de passe incorrect' });
-        }
-
-        const token = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.JWT_SECRET || 'secret',
-            { expiresIn: '7d' }
-        );
-
-        res.json({
-            message: 'Connexion réussie',
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                phone_number: user.phone_number,
-                role: user.role
-            },
-            token
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+  try {
+    const { phone_number, password } = req.body;
+    const user = await User.findOne({ phone_number }).select("+password");
+    if (!user || !(await user.comparePassword(password)))
+      return res.status(401).json({ message: "Numéro ou mot de passe incorrect" });
+    const token = signToken(user._id, user.role);
+    res.json({ message: "Connexion réussie", user: { id: user._id, name: user.name, email: user.email, role: user.role }, token });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// Rafraîchir token
 const handleToken = async (req, res) => {
-    try {
-        const { token } = req.body;
-        
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
-        const user = await User.findById(decoded.id);
-
-        if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
-        }
-
-        const newToken = jwt.sign(
-            { id: user._id, role: user.role },
-            process.env.JWT_SECRET || 'secret',
-            { expiresIn: '7d' }
-        );
-
-        res.json({ token: newToken });
-    } catch (error) {
-        res.status(401).json({ message: 'Token invalide' });
-    }
+  try {
+    const { token } = req.body;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: "Utilisateur non trouvé" });
+    const newToken = signToken(user._id, user.role);
+    res.json({ token: newToken });
+  } catch (error) {
+    res.status(401).json({ message: "Token invalide" });
+  }
 };
 
-// Récupérer tous les utilisateurs
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "Aucun compte associé à cet email" });
+
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    await sendPasswordResetEmail(user.email, resetToken, user.name);
+    res.json({ message: "Email de réinitialisation envoyé" });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de l'envoi de l'email: " + error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    }).select("+resetPasswordToken +resetPasswordExpire");
+
+    if (!user) return res.status(400).json({ message: "Token invalide ou expiré" });
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    const jwtToken = signToken(user._id, user.role);
+    res.json({ message: "Mot de passe réinitialisé avec succès", token: jwtToken });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const getAllUsers = async (req, res) => {
-    try {
-        const users = await User.find().select('-password');
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+  try {
+    const users = await User.find().select("-password");
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// Export NOMINATIF (important !)
-module.exports = {
-    signUp,
-    loginByEmail,
-    loginByPhoneNumber,
-    handleToken,
-    getAllUsers
+const getMe = async (req, res) => {
+  res.json(req.user);
 };
+
+module.exports = { signUp, loginByEmail, loginByPhoneNumber, handleToken, forgotPassword, resetPassword, getAllUsers, getMe };

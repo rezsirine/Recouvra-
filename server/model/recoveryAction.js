@@ -9,7 +9,7 @@ const recoveryActionSchema = new mongoose.Schema({
     agent: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: false  // ← Changé de true à false
+        required: false     
     },
     type: {
         type: String,

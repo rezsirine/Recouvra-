@@ -1,0 +1,137 @@
+<div class="app-container">
+  <%- include('partials/sidebar', { page: 'recovery', user: user }) %>
+  <div class="main-content">
+    <%- include('partials/navbar', { title: 'Recouvrement', user: user }) %>
+    <div class="content-wrapper">
+      <div class="page-header">
+        <div class="page-header-info">
+          <h2>Actions de recouvrement</h2>
+          <p>Suivez toutes vos actions de recouvrement</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('createActionModal')">
+          <i class="fas fa-plus"></i> Nouvelle action
+        </button>
+      </div>
+
+      <!-- Stats rapides -->
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px" id="actionStats">
+        <div class="stat-card stat-card-blue"><div class="stat-icon"><i class="fas fa-tasks"></i></div><div class="stat-info"><span class="stat-label">Total</span><span class="stat-value" id="statTotal">—</span></div></div>
+        <div class="stat-card stat-card-green"><div class="stat-icon"><i class="fas fa-check"></i></div><div class="stat-info"><span class="stat-label">Réussies</span><span class="stat-value" id="statSuccess">—</span></div></div>
+        <div class="stat-card stat-card-red"><div class="stat-icon"><i class="fas fa-times"></i></div><div class="stat-info"><span class="stat-label">Échouées</span><span class="stat-value" id="statFailed">—</span></div></div>
+        <div class="stat-card stat-card-orange"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-info"><span class="stat-label">En attente</span><span class="stat-value" id="statPending">—</span></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table">
+              <thead><tr><th>Facture</th><th>Type</th><th>Description</th><th>Date</th><th>Résultat</th><th>Prochaine action</th><th>Actions</th></tr></thead>
+              <tbody id="actionsTable"><tr><td colspan="7" class="text-center"><div class="loading-spinner"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Create Action -->
+<div class="modal-overlay" id="createActionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-plus-circle"></i> Nouvelle action</h3>
+      <button class="modal-close" onclick="closeModal('createActionModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="actionAlert"></div>
+    <form id="createActionForm">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-group">
+          <label class="form-label">Facture</label>
+          <select name="invoiceId" id="invoiceSelect" class="form-control" required>
+            <option value="">Sélectionner une facture...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type d'action</label>
+          <select name="type" class="form-control" required>
+            <option value="call">📞 Appel téléphonique</option>
+            <option value="email">📧 Email</option>
+            <option value="meeting">🤝 Réunion</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prochaine action prévue</label>
+          <input type="date" name="nextAction" class="form-control" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('createActionModal')">Annuler</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const typeIcon = { call: '📞', email: '📧', meeting: '🤝' };
+
+async function loadData() {
+  const [actData, statsData, invData] = await Promise.all([
+    api('/recovery/getAll'),
+    api('/recovery/stats'),
+    api('/invoice/getAll'),
+  ]);
+
+  const stats = statsData || {};
+  document.getElementById('statTotal').textContent = stats.total || 0;
+  document.getElementById('statSuccess').textContent = stats.byOutcome?.successful || 0;
+  document.getElementById('statFailed').textContent = stats.byOutcome?.failed || 0;
+  document.getElementById('statPending').textContent = stats.byOutcome?.pending || 0;
+
+  const actions = (actData && (actData.data || actData)) || [];
+  const tbody = document.getElementById('actionsTable');
+  tbody.innerHTML = actions.length === 0 ? '<tr><td colspan="7" class="text-center text-muted">Aucune action enregistrée</td></tr>'
+    : actions.map(a => `<tr>
+        <td><span class="badge badge-blue">${a.invoice?.number || '—'}</span></td>
+        <td>${typeIcon[a.type] || ''} ${a.type}</td>
+        <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.description}</td>
+        <td>${formatDate(a.date)}</td>
+        <td>${statusBadge(a.outcome)}</td>
+        <td>${a.nextAction ? formatDate(a.nextAction) : '<span class="text-muted">—</span>'}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="deleteAction('${a._id}')"><i class="fas fa-trash"></i></button></td>
+      </tr>`).join('');
+
+  const invs = (invData && (invData.data || invData)) || [];
+  const sel = document.getElementById('invoiceSelect');
+  invs.filter(i => i.status !== 'paid').forEach(i => {
+    const opt = document.createElement('option');
+    opt.value = i._id;
+    opt.textContent = `${i.number} — ${i.client?.company || i.client?.name || ''}`;
+    sel.appendChild(opt);
+  });
+}
+
+document.getElementById('createActionForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const body = Object.fromEntries(fd.entries());
+  const res = await api('/recovery/create', { method: 'POST', body: JSON.stringify(body) });
+  if (res && res.action) { closeModal('createActionModal'); e.target.reset(); loadData(); }
+  else document.getElementById('actionAlert').innerHTML = `<div class="alert alert-danger">${res?.message || 'Erreur'}</div>`;
+});
+
+async function deleteAction(id) {
+  if (!confirm('Supprimer cette action ?')) return;
+  await api('/recovery/delete/' + id, { method: 'DELETE' });
+  loadData();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+loadData();
+</script>

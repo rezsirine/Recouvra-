@@ -1,0 +1,61 @@
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <i class="fas fa-shield-alt"></i>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">Recouvra+</span>
+      <span class="brand-sub">Gestion de recouvrement</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <span class="nav-label">Principal</span>
+      <a href="/dashboard" class="nav-item <%= typeof page !== 'undefined' && page === 'dashboard' ? 'active' : '' %>">
+        <i class="fas fa-chart-pie"></i>
+        <span>Tableau de bord</span>
+      </a>
+    </div>
+    <div class="nav-section">
+      <span class="nav-label">Gestion</span>
+      <a href="/clients" class="nav-item <%= typeof page !== 'undefined' && page === 'clients' ? 'active' : '' %>">
+        <i class="fas fa-users"></i>
+        <span>Clients</span>
+      </a>
+      <a href="/invoices" class="nav-item <%= typeof page !== 'undefined' && page === 'invoices' ? 'active' : '' %>">
+        <i class="fas fa-file-invoice-dollar"></i>
+        <span>Factures</span>
+        <% if (typeof overdueCount !== 'undefined' && overdueCount > 0) { %>
+          <span class="badge badge-danger"><%= overdueCount %></span>
+        <% } %>
+      </a>
+      <a href="/recovery" class="nav-item <%= typeof page !== 'undefined' && page === 'recovery' ? 'active' : '' %>">
+        <i class="fas fa-tasks"></i>
+        <span>Recouvrement</span>
+      </a>
+    </div>
+    <% if (typeof user !== 'undefined' && (user.role === 'admin' || user.role === 'manager')) { %>
+    <div class="nav-section">
+      <span class="nav-label">Administration</span>
+      <a href="/users" class="nav-item <%= typeof page !== 'undefined' && page === 'users' ? 'active' : '' %>">
+        <i class="fas fa-user-cog"></i>
+        <span>Utilisateurs</span>
+      </a>
+    </div>
+    <% } %>
+  </nav>
+
+  <div class="sidebar-footer">
+    <% if (typeof user !== 'undefined') { %>
+    <div class="user-info">
+      <div class="user-avatar"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></div>
+      <div class="user-details">
+        <span class="user-name"><%= user.name %></span>
+        <span class="user-role badge-role-<%= user.role %>"><%= user.role %></span>
+      </div>
+    </div>
+    <% } %>
+    <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i></a>
+  </div>
+</aside>

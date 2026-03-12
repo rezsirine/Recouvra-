@@ -29,7 +29,7 @@ const clientSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: false  // ← Changé de true à false
+        required: false  
     }
 }, {
     timestamps: true

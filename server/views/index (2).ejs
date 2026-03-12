@@ -1,0 +1,127 @@
+<div class="app-container">
+  <%- include('partials/sidebar', { page: 'invoices', user: user }) %>
+  <div class="main-content">
+    <%- include('partials/navbar', { title: 'Factures', user: user }) %>
+    <div class="content-wrapper">
+      <div class="page-header">
+        <div class="page-header-info">
+          <h2>Gestion des factures</h2>
+          <p>Suivez et gérez vos factures</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('createInvoiceModal')">
+          <i class="fas fa-plus"></i> Nouvelle facture
+        </button>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="searchInput" class="form-control search-input" placeholder="Rechercher..." oninput="filterInvoices()" />
+        <select id="statusFilter" class="form-control" onchange="filterInvoices()" style="width:auto">
+          <option value="">Tous les statuts</option>
+          <option value="unpaid">Impayée</option>
+          <option value="paid">Payée</option>
+          <option value="overdue">En retard</option>
+          <option value="pending">En cours</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr><th>N° Facture</th><th>Client</th><th>Montant</th><th>Payé</th><th>Échéance</th><th>Statut</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="invoicesTable">
+                <tr><td colspan="7" class="text-center"><div class="loading-spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Paiement -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-euro-sign"></i> Enregistrer un paiement</h3>
+      <button class="modal-close" onclick="closeModal('paymentModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="paymentAlert"></div>
+    <form id="paymentForm">
+      <input type="hidden" id="paymentInvoiceId" />
+      <div class="form-group">
+        <label class="form-label">Montant du paiement (€)</label>
+        <input type="number" id="paymentAmount" class="form-control" min="0.01" step="0.01" required />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('paymentModal')">Annuler</button>
+        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Valider</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+let invoices = [];
+
+async function loadInvoices() {
+  const data = await api('/invoice/getAll');
+  invoices = (data && (data.data || data)) || [];
+  renderInvoices(invoices);
+}
+
+function renderInvoices(list) {
+  const tbody = document.getElementById('invoicesTable');
+  tbody.innerHTML = list.length === 0 ? '<tr><td colspan="7" class="text-center text-muted">Aucune facture</td></tr>'
+    : list.map(inv => `<tr>
+        <td><strong>${inv.number}</strong></td>
+        <td>${inv.client?.company || inv.client?.name || '—'}</td>
+        <td class="fw-bold">${formatCurrency(inv.amount)}</td>
+        <td>${formatCurrency(inv.paidAmount)}</td>
+        <td>${formatDate(inv.dueDate)}</td>
+        <td>${statusBadge(inv.status)}</td>
+        <td><div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-primary" onclick="openPayment('${inv._id}')"><i class="fas fa-euro-sign"></i></button>
+          <button class="btn btn-sm btn-danger" onclick="deleteInvoice('${inv._id}')"><i class="fas fa-trash"></i></button>
+        </div></td>
+      </tr>`).join('');
+}
+
+function filterInvoices() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const s = document.getElementById('statusFilter').value;
+  renderInvoices(invoices.filter(inv =>
+    (!s || inv.status === s) &&
+    (!q || inv.number.toLowerCase().includes(q) || (inv.client?.company || '').toLowerCase().includes(q))
+  ));
+}
+
+function openPayment(id) {
+  document.getElementById('paymentInvoiceId').value = id;
+  document.getElementById('paymentAmount').value = '';
+  openModal('paymentModal');
+}
+
+document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('paymentInvoiceId').value;
+  const amount = document.getElementById('paymentAmount').value;
+  const res = await api('/invoice/payment/' + id, { method: 'POST', body: JSON.stringify({ amount: Number(amount) }) });
+  if (res && res.success) { closeModal('paymentModal'); loadInvoices(); }
+  else document.getElementById('paymentAlert').innerHTML = `<div class="alert alert-danger">${res?.message || 'Erreur'}</div>`;
+});
+
+async function deleteInvoice(id) {
+  if (!confirm('Supprimer cette facture ?')) return;
+  await api('/invoice/delete/' + id, { method: 'DELETE' });
+  loadInvoices();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+loadInvoices();
+</script>
