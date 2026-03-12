@@ -3,49 +3,53 @@
     <h2>Actions de recouvrement</h2>
     <p>Suivez toutes vos actions de recouvrement</p>
   </div>
-  <button class="btn btn-primary" onclick="openModal('createActionModal')">
+  <button class="btn btn-primary" onclick="openModal('recoveryModal')">
     <i class="fas fa-plus"></i> Nouvelle action
   </button>
 </div>
 
 <!-- Stats rapides -->
 <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
-  <div class="stat-card stat-card-blue"><div class="stat-icon"><i class="fas fa-tasks"></i></div><div class="stat-info"><span class="stat-label">Total</span><span class="stat-value" id="statTotal">—</span></div></div>
-  <div class="stat-card stat-card-green"><div class="stat-icon"><i class="fas fa-check"></i></div><div class="stat-info"><span class="stat-label">Réussies</span><span class="stat-value" id="statSuccess">—</span></div></div>
-  <div class="stat-card stat-card-red"><div class="stat-icon"><i class="fas fa-times"></i></div><div class="stat-info"><span class="stat-label">Échouées</span><span class="stat-value" id="statFailed">—</span></div></div>
-  <div class="stat-card stat-card-orange"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-info"><span class="stat-label">En attente</span><span class="stat-value" id="statPending">—</span></div></div>
+  <div class="stat-card stat-card-blue"><div class="stat-icon"><i class="fas fa-tasks"></i></div><div class="stat-info"><span class="stat-label">Total</span><span class="stat-value" id="rTotal">—</span></div></div>
+  <div class="stat-card stat-card-green"><div class="stat-icon"><i class="fas fa-check"></i></div><div class="stat-info"><span class="stat-label">Réussies</span><span class="stat-value" id="rSuccessful">—</span></div></div>
+  <div class="stat-card stat-card-red"><div class="stat-icon"><i class="fas fa-times"></i></div><div class="stat-info"><span class="stat-label">Échouées</span><span class="stat-value" id="rFailed">—</span></div></div>
+  <div class="stat-card stat-card-orange"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-info"><span class="stat-label">En attente</span><span class="stat-value" id="rPending">—</span></div></div>
 </div>
 
 <div class="card">
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table">
-        <thead><tr><th>Facture</th><th>Type</th><th>Description</th><th>Date</th><th>Résultat</th><th>Prochaine action</th><th>Actions</th></tr></thead>
-        <tbody id="actionsTable"><tr><td colspan="7" class="text-center"><div class="loading-spinner"></div></td></tr></tbody>
+        <thead>
+          <tr><th>Date</th><th>Facture</th><th>Type</th><th>Description</th><th>Résultat</th><th>Prochaine action</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="recoveryTable">
+          <tr><td colspan="7" class="text-center"><div class="loading-spinner"></div></td></tr>
+        </tbody>
       </table>
     </div>
   </div>
 </div>
 
-<!-- Modal Créer Action -->
-<div class="modal-overlay" id="createActionModal">
+<!-- Modal Créer/Modifier Action -->
+<div class="modal-overlay" id="recoveryModal">
   <div class="modal">
     <div class="modal-header">
-      <h3><i class="fas fa-plus-circle"></i> Nouvelle action</h3>
-      <button class="modal-close" onclick="closeModal('createActionModal')"><i class="fas fa-times"></i></button>
+      <h3><i class="fas fa-plus-circle"></i> <span id="recoveryModalTitle">Nouvelle action</span></h3>
+      <button class="modal-close" onclick="closeModal('recoveryModal')"><i class="fas fa-times"></i></button>
     </div>
-    <div id="actionAlert"></div>
-    <form id="createActionForm">
+    <form id="recoveryForm" onsubmit="saveAction(event)">
+      <input type="hidden" id="actionId" />
       <div style="display:flex;flex-direction:column;gap:14px">
         <div class="form-group">
           <label class="form-label">Facture</label>
-          <select name="invoiceId" id="invoiceSelect" class="form-control" required>
+          <select id="actionInvoice" class="form-control" required>
             <option value="">Sélectionner une facture...</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">Type d'action</label>
-          <select name="type" class="form-control" required>
+          <select id="actionType" class="form-control" required>
             <option value="call">📞 Appel téléphonique</option>
             <option value="email">📧 Email</option>
             <option value="meeting">🤝 Réunion</option>
@@ -53,99 +57,30 @@
         </div>
         <div class="form-group">
           <label class="form-label">Description</label>
-          <textarea name="description" class="form-control" rows="3" required></textarea>
+          <textarea id="actionDescription" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" id="actionDate" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Résultat</label>
+          <select id="actionOutcome" class="form-control">
+            <option value="pending">En attente</option>
+            <option value="successful">Réussie</option>
+            <option value="failed">Échouée</option>
+            <option value="rescheduled">Reportée</option>
+          </select>
         </div>
         <div class="form-group">
           <label class="form-label">Prochaine action prévue</label>
-          <input type="date" name="nextAction" class="form-control" />
+          <input type="date" id="actionNext" class="form-control" />
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" onclick="closeModal('createActionModal')">Annuler</button>
+        <button type="button" class="btn btn-outline" onclick="closeModal('recoveryModal')">Annuler</button>
         <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button>
       </div>
     </form>
   </div>
 </div>
-
-<script>
-const token = localStorage.getItem('token');
-if (!token) window.location.href = '/login';
-
-const typeIcon = { call: '📞', email: '📧', meeting: '🤝' };
-
-async function api(endpoint, options = {}) {
-  const res = await fetch('/api' + endpoint, {
-    ...options,
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...options.headers }
-  });
-  return res.json();
-}
-
-function formatDate(d) { return d ? new Date(d).toLocaleDateString('fr-FR') : '—'; }
-function statusBadge(s) {
-  const map = { successful:'success', failed:'danger', pending:'warning', rescheduled:'blue' };
-  const label = { successful:'Réussi', failed:'Échoué', pending:'En attente', rescheduled:'Reporté' };
-  return `<span class="badge badge-${map[s]||'gray'}">${label[s]||s}</span>`;
-}
-
-async function loadData() {
-  const [actData, statsData, invData] = await Promise.all([
-    api('/recovery/getAll'),
-    api('/recovery/stats'),
-    api('/invoice/getAll')
-  ]);
-
-  // Stats
-  const stats = statsData || {};
-  document.getElementById('statTotal').textContent   = stats.total || 0;
-  document.getElementById('statSuccess').textContent = stats.byOutcome?.successful || 0;
-  document.getElementById('statFailed').textContent  = stats.byOutcome?.failed || 0;
-  document.getElementById('statPending').textContent = stats.byOutcome?.pending || 0;
-
-  // Tableau actions
-  const actions = actData?.data || [];
-  const tbody = document.getElementById('actionsTable');
-  tbody.innerHTML = !actions.length
-    ? '<tr><td colspan="7" class="text-center text-muted">Aucune action enregistrée</td></tr>'
-    : actions.map(a => `<tr>
-        <td><span class="badge badge-blue">${a.invoice?.number || '—'}</span></td>
-        <td>${typeIcon[a.type] || ''} ${a.type}</td>
-        <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.description}</td>
-        <td>${formatDate(a.date)}</td>
-        <td>${statusBadge(a.outcome)}</td>
-        <td>${a.nextAction ? formatDate(a.nextAction) : '<span class="text-muted">—</span>'}</td>
-        <td><button class="btn btn-sm btn-danger" onclick="deleteAction('${a._id}')"><i class="fas fa-trash"></i></button></td>
-      </tr>`).join('');
-
-  // Select factures (non payées)
-  const invs = invData?.data || [];
-  const sel = document.getElementById('invoiceSelect');
-  sel.innerHTML = '<option value="">Sélectionner une facture...</option>';
-  invs.filter(i => i.status !== 'paid').forEach(i => {
-    const opt = document.createElement('option');
-    opt.value = i._id;
-    opt.textContent = `${i.number} — ${i.client?.company || i.client?.name || ''}`;
-    sel.appendChild(opt);
-  });
-}
-
-document.getElementById('createActionForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const body = Object.fromEntries(new FormData(e.target).entries());
-  const res = await api('/recovery/create', { method: 'POST', body: JSON.stringify(body) });
-  if (res.action) { closeModal('createActionModal'); e.target.reset(); loadData(); }
-  else document.getElementById('actionAlert').innerHTML = `<div class="alert alert-danger">${res.message || 'Erreur'}</div>`;
-});
-
-async function deleteAction(id) {
-  if (!confirm('Supprimer cette action ?')) return;
-  await api('/recovery/delete/' + id, { method: 'DELETE' });
-  loadData();
-}
-
-function openModal(id)  { document.getElementById(id).classList.add('active'); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-document.addEventListener('DOMContentLoaded', loadData);
-</script>
