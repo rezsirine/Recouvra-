@@ -85,7 +85,7 @@
 const token = localStorage.getItem('token');
 if (!token) window.location.href = '/login';
 
-let clients = [];
+let clientsList = [];
 
 async function apiCall(endpoint, options = {}) {
   const res = await fetch('/api' + endpoint, {
@@ -97,18 +97,18 @@ async function apiCall(endpoint, options = {}) {
   return data;
 }
 
-async function loadClients() {
+async function loadClientsPage() {
   try {
     const data = await apiCall('/client/getAll');
-    clients = data.data || [];
-    document.getElementById('clientCount').textContent = clients.length + ' client(s)';
-    renderClients(clients);
+    clientsList = data.data || [];
+    document.getElementById('clientCount').textContent = clientsList.length + ' client(s)';
+    renderClientsPage(clientsList);
   } catch (e) {
     document.getElementById('clientsTable').innerHTML = `<tr><td colspan="6" class="text-center text-danger">${e.message}</td></tr>`;
   }
 }
 
-function renderClients(list) {
+function renderClientsPage(list) {
   const tbody = document.getElementById('clientsTable');
   if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Aucun client</td></tr>'; return; }
   tbody.innerHTML = list.map(c => `<tr>
@@ -118,15 +118,15 @@ function renderClients(list) {
     <td>${c.phone}</td>
     <td><span class="badge badge-gray">${c.siret}</span></td>
     <td><div style="display:flex;gap:6px">
-      <button class="btn btn-sm btn-outline" onclick="editClient('${c._id}')"><i class="fas fa-edit"></i></button>
-      <button class="btn btn-sm btn-danger" onclick="deleteClient('${c._id}')"><i class="fas fa-trash"></i></button>
+      <button class="btn btn-sm btn-outline" onclick="editClientPage('${c._id}')"><i class="fas fa-edit"></i></button>
+      <button class="btn btn-sm btn-danger" onclick="deleteClientPage('${c._id}')"><i class="fas fa-trash"></i></button>
     </div></td>
   </tr>`).join('');
 }
 
 function filterClients() {
   const q = document.getElementById('searchInput').value.toLowerCase();
-  renderClients(q ? clients.filter(c => (c.name+c.company+c.email+c.siret).toLowerCase().includes(q)) : clients);
+  renderClientsPage(q ? clientsList.filter(c => (c.name+c.company+c.email+c.siret).toLowerCase().includes(q)) : clientsList);
 }
 
 async function createClient(e) {
@@ -136,12 +136,12 @@ async function createClient(e) {
     await apiCall('/client/create', { method: 'POST', body: JSON.stringify(data) });
     showAlert('createAlert', 'Client créé !', 'success');
     e.target.reset();
-    setTimeout(() => { closeModal('createModal'); loadClients(); }, 800);
+    setTimeout(() => { closeModal('createModal'); loadClientsPage(); }, 800);
   } catch (err) { showAlert('createAlert', err.message, 'danger'); }
 }
 
-function editClient(id) {
-  const c = clients.find(x => x._id === id);
+function editClientPage(id) {
+  const c = clientsList.find(x => x._id === id);
   if (!c) return;
   document.getElementById('editClientId').value = c._id;
   document.getElementById('editName').value    = c.name || '';
@@ -155,17 +155,23 @@ function editClient(id) {
 async function updateClient(e) {
   e.preventDefault();
   const id = document.getElementById('editClientId').value;
-  const data = { name: document.getElementById('editName').value, company: document.getElementById('editCompany').value, email: document.getElementById('editEmail').value, phone: document.getElementById('editPhone').value, address: document.getElementById('editAddress').value };
+  const data = {
+    name:    document.getElementById('editName').value,
+    company: document.getElementById('editCompany').value,
+    email:   document.getElementById('editEmail').value,
+    phone:   document.getElementById('editPhone').value,
+    address: document.getElementById('editAddress').value
+  };
   try {
     await apiCall(`/client/update/${id}`, { method: 'PUT', body: JSON.stringify(data) });
     showAlert('editAlert', 'Client mis à jour !', 'success');
-    setTimeout(() => { closeModal('editModal'); loadClients(); }, 800);
+    setTimeout(() => { closeModal('editModal'); loadClientsPage(); }, 800);
   } catch (err) { showAlert('editAlert', err.message, 'danger'); }
 }
 
-async function deleteClient(id) {
+async function deleteClientPage(id) {
   if (!confirm('Supprimer ce client ?')) return;
-  try { await apiCall(`/client/delete/${id}`, { method: 'DELETE' }); loadClients(); }
+  try { await apiCall(`/client/delete/${id}`, { method: 'DELETE' }); loadClientsPage(); }
   catch (e) { alert(e.message); }
 }
 
@@ -176,8 +182,5 @@ function showAlert(id, msg, type) {
   setTimeout(() => el.innerHTML = '', 4000);
 }
 
-function openModal(id)  { document.getElementById(id).classList.add('active'); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-document.addEventListener('DOMContentLoaded', loadClients);
+loadClientsPage();
 </script>

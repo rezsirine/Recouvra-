@@ -6,12 +6,12 @@ const API = '/api';
 
 // ── 
 // Token helpers ──
-const getToken = () => localStorage.getItem('token');
-const setToken = (t) => localStorage.setItem('token', t);
-const removeToken = () => localStorage.removeItem('token');
+var getToken = () => localStorage.getItem('token');
+var setToken = (t) => localStorage.setItem('token', t);
+var removeToken = () => localStorage.removeItem('token');
 
 // ── Auth guard ──
-const requireAuth = () => {
+var requireAuth = () => {
   if (!getToken() && !location.pathname.startsWith('/login') && !location.pathname.startsWith('/signup')
       && !location.pathname.startsWith('/forgot') && !location.pathname.startsWith('/reset')) {
     location.href = '/login';
@@ -19,7 +19,7 @@ const requireAuth = () => {
 };
 
 // ── Fetch wrapper ──
-const apiFetch = async (path, options = {}) => {
+var apiFetch = async (path, options = {}) => {
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (getToken()) headers['Authorization'] = `Bearer ${getToken()}`;
   const res = await fetch(API + path, { ...options, headers });
@@ -29,7 +29,7 @@ const apiFetch = async (path, options = {}) => {
 };
 
 // ── Toast ──
-const showToast = (msg, type = 'success') => {
+var showToast = (msg, type = 'success') => {
   let container = document.getElementById('toastContainer');
   if (!container) {
     container = document.createElement('div');
@@ -45,7 +45,7 @@ const showToast = (msg, type = 'success') => {
 };
 
 // ── Alert ──
-const showAlert = (id, msg, type = 'error') => {
+var showAlert = (id, msg, type = 'error') => {
   const el = document.getElementById(id);
   if (!el) return;
   el.className = `alert alert-${type}`;
@@ -54,11 +54,11 @@ const showAlert = (id, msg, type = 'error') => {
 };
 
 // ── Modal helpers ──
-const openModal = (id) => {
+var openModal = (id) => {
   const el = document.getElementById(id);
   if (el) el.style.display = 'flex';
 };
-const closeModal = (id) => {
+var closeModal = (id) => {
   const el = document.getElementById(id);
   if (el) el.style.display = 'none';
 };
@@ -170,7 +170,7 @@ const handleReset = async (e) => {
   btn.querySelector('.btn-text').style.display = 'none';
   btn.querySelector('.btn-loader').style.display = 'block';
   try {
-    const token = document.getElementById('resetToken').value || new URLSearchParams(location.search).get('token');
+    var token = document.getElementById('resetToken').value || new URLSearchParams(location.search).get('token');
     await apiFetch('/user/reset-password', { method: 'POST', body: JSON.stringify({ token, password: pass }) });
     showAlert('alertMsg', 'Mot de passe réinitialisé ! Redirection...', 'success');
     setTimeout(() => location.href = '/login', 2000);
@@ -255,7 +255,7 @@ const loadDashboard = async () => {
 
 let clientsData = [];
 
-const loadClients = async () => {
+var loadClients = async () => {
   try {
     // FIX: le controller retourne { success, count, data: [...] }
     const res = await apiFetch('/client/getAll');
@@ -266,7 +266,7 @@ const loadClients = async () => {
   }
 };
 
-const renderClients = (list) => {
+var renderClients = (list) => {
   const tbody = document.getElementById('clientsTable');
   if (!tbody) return;
   if (!list || list.length === 0) {
@@ -290,7 +290,7 @@ const renderClients = (list) => {
   `).join('');
 };
 
-const filterClients = () => {
+var filterClients = () => {
   const q = document.getElementById('clientSearch')?.value.toLowerCase() || '';
   renderClients(clientsData.filter(c =>
     c.name.toLowerCase().includes(q) ||
@@ -299,7 +299,7 @@ const filterClients = () => {
   ));
 };
 
-const editClient = (id) => {
+var editClient = (id) => {
   const c = clientsData.find(x => x._id === id);
   if (!c) return;
   document.getElementById('clientId').value      = c._id;
@@ -313,7 +313,7 @@ const editClient = (id) => {
   openModal('clientModal');
 };
 
-const saveClient = async (e) => {
+var saveClient = async (e) => {
   e.preventDefault();
   const id = document.getElementById('clientId').value;
   const body = {
@@ -336,7 +336,7 @@ const saveClient = async (e) => {
   } catch (err) { showToast(err.message, 'error'); }
 };
 
-const deleteClient = async (id) => {
+var deleteClient = async (id) => {
   if (!confirm('Supprimer ce client ?')) return;
   try {
     await apiFetch(`/client/delete/${id}`, { method: 'DELETE' });
