@@ -1,16 +1,13 @@
 const mongoose = require("mongoose");
-const connection = async () => {
-  try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/commerce", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
 
-    console.log("MongoDB connection established successfully.");
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/recouvraplus");
+    console.log(" MongoDB connecté avec succès.");
   } catch (error) {
-    console.error("Unable to connect to MongoDB:", error);
+    console.error(" Erreur de connexion MongoDB:", error.message);
     process.exit(1);
   }
 };
-  
-module.exports = connection;
+
+module.exports = connectDB;
