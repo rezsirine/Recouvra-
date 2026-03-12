@@ -1,47 +1,37 @@
-<div class="app-container">
-  <%- include('partials/sidebar', { page: 'clients', user: user }) %>
-  <div class="main-content">
-    <%- include('partials/navbar', { title: 'Clients', user: user }) %>
-    <div class="content-wrapper">
+<div class="page-header">
+  <div class="page-header-info">
+    <h2>Gestion des clients</h2>
+    <p>Gérez votre portefeuille clients</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('createModal')">
+    <i class="fas fa-plus"></i> Nouveau client
+  </button>
+</div>
 
-      <div class="page-header">
-        <div class="page-header-info">
-          <h2>Gestion des clients</h2>
-          <p>Gérez votre portefeuille clients</p>
-        </div>
-        <button class="btn btn-primary" onclick="openModal('createModal')">
-          <i class="fas fa-plus"></i> Nouveau client
-        </button>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div class="filter-bar" style="margin:0">
-            <input type="text" id="searchInput" class="form-control search-input" placeholder="Rechercher un client..." oninput="filterClients()" />
-          </div>
-          <span id="clientCount" class="badge badge-blue">—</span>
-        </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Entreprise</th><th>Contact</th><th>Email</th><th>Téléphone</th><th>SIRET</th><th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="clientsTable">
-                <tr><td colspan="6" class="text-center"><div class="loading-spinner"></div></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
+<div class="card">
+  <div class="card-header">
+    <div class="filter-bar" style="margin:0">
+      <input type="text" id="searchInput" class="form-control search-input" placeholder="Rechercher un client..." onkeyup="filterClients()" />
+    </div>
+    <span id="clientCount" class="badge badge-blue">0 client(s)</span>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Entreprise</th><th>Contact</th><th>Email</th><th>Téléphone</th><th>SIRET</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="clientsTable">
+          <tr><td colspan="6" class="text-center"><div class="loading-spinner"></div></td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
-<!-- Modal Créer Client -->
+<!-- Modal Créer -->
 <div class="modal-overlay" id="createModal">
   <div class="modal">
     <div class="modal-header">
@@ -49,14 +39,14 @@
       <button class="modal-close" onclick="closeModal('createModal')"><i class="fas fa-times"></i></button>
     </div>
     <div id="createAlert"></div>
-    <form id="createForm">
+    <form id="createForm" onsubmit="createClient(event)">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-        <div class="form-group"><label class="form-label">Nom</label><input type="text" name="name" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Entreprise</label><input type="text" name="company" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Email</label><input type="email" name="email" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">Téléphone</label><input type="text" name="phone" class="form-control" required /></div>
-        <div class="form-group"><label class="form-label">SIRET (14 chiffres)</label><input type="text" name="siret" class="form-control" maxlength="14" required /></div>
-        <div class="form-group" style="grid-column:span 2"><label class="form-label">Adresse</label><input type="text" name="address" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">Nom *</label><input type="text" name="name" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">Entreprise *</label><input type="text" name="company" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">Téléphone *</label><input type="tel" name="phone" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">SIRET (14 chiffres) *</label><input type="text" name="siret" class="form-control" maxlength="14" pattern="[0-9]{14}" required /></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Adresse *</label><input type="text" name="address" class="form-control" required /></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline" onclick="closeModal('createModal')">Annuler</button>
@@ -66,62 +56,128 @@
   </div>
 </div>
 
+<!-- Modal Modifier -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-edit"></i> Modifier client</h3>
+      <button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="editAlert"></div>
+    <form id="editForm" onsubmit="updateClient(event)">
+      <input type="hidden" id="editClientId" />
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="form-group"><label class="form-label">Nom</label><input type="text" id="editName" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">Entreprise</label><input type="text" id="editCompany" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" id="editEmail" class="form-control" required /></div>
+        <div class="form-group"><label class="form-label">Téléphone</label><input type="tel" id="editPhone" class="form-control" required /></div>
+        <div class="form-group" style="grid-column:span 2"><label class="form-label">Adresse</label><input type="text" id="editAddress" class="form-control" required /></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('editModal')">Annuler</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Mettre à jour</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '/login';
+
 let clients = [];
 
+async function apiCall(endpoint, options = {}) {
+  const res = await fetch('/api' + endpoint, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...options.headers }
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Erreur API');
+  return data;
+}
+
 async function loadClients() {
-  const data = await api('/client/getAll');
-  clients = (data && (data.data || data)) || [];
-  document.getElementById('clientCount').textContent = clients.length + ' client(s)';
-  renderClients(clients);
+  try {
+    const data = await apiCall('/client/getAll');
+    clients = data.data || [];
+    document.getElementById('clientCount').textContent = clients.length + ' client(s)';
+    renderClients(clients);
+  } catch (e) {
+    document.getElementById('clientsTable').innerHTML = `<tr><td colspan="6" class="text-center text-danger">${e.message}</td></tr>`;
+  }
 }
 
 function renderClients(list) {
   const tbody = document.getElementById('clientsTable');
-  tbody.innerHTML = list.length === 0 ? '<tr><td colspan="6" class="text-center text-muted">Aucun client trouvé</td></tr>'
-    : list.map(c => `
-      <tr>
-        <td><strong>${c.company}</strong></td>
-        <td>${c.name}</td>
-        <td><a href="mailto:${c.email}" class="link-primary">${c.email}</a></td>
-        <td>${c.phone}</td>
-        <td><span class="badge badge-gray">${c.siret}</span></td>
-        <td>
-          <div style="display:flex;gap:6px">
-            <a href="/invoices?client=${c._id}" class="btn btn-sm btn-outline" title="Factures"><i class="fas fa-file-invoice"></i></a>
-            <button class="btn btn-sm btn-danger" onclick="deleteClient('${c._id}')" title="Supprimer"><i class="fas fa-trash"></i></button>
-          </div>
-        </td>
-      </tr>`).join('');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Aucun client</td></tr>'; return; }
+  tbody.innerHTML = list.map(c => `<tr>
+    <td><strong>${c.company}</strong></td>
+    <td>${c.name}</td>
+    <td><a href="mailto:${c.email}" class="link-primary">${c.email}</a></td>
+    <td>${c.phone}</td>
+    <td><span class="badge badge-gray">${c.siret}</span></td>
+    <td><div style="display:flex;gap:6px">
+      <button class="btn btn-sm btn-outline" onclick="editClient('${c._id}')"><i class="fas fa-edit"></i></button>
+      <button class="btn btn-sm btn-danger" onclick="deleteClient('${c._id}')"><i class="fas fa-trash"></i></button>
+    </div></td>
+  </tr>`).join('');
 }
 
 function filterClients() {
   const q = document.getElementById('searchInput').value.toLowerCase();
-  renderClients(clients.filter(c => c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)));
+  renderClients(q ? clients.filter(c => (c.name+c.company+c.email+c.siret).toLowerCase().includes(q)) : clients);
 }
 
-document.getElementById('createForm').addEventListener('submit', async (e) => {
+async function createClient(e) {
   e.preventDefault();
-  const fd = new FormData(e.target);
-  const body = Object.fromEntries(fd.entries());
-  const res = await api('/client/create', { method: 'POST', body: JSON.stringify(body) });
-  if (res && (res.client || res.message === 'Client créé')) {
-    closeModal('createModal');
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  try {
+    await apiCall('/client/create', { method: 'POST', body: JSON.stringify(data) });
+    showAlert('createAlert', 'Client créé !', 'success');
     e.target.reset();
-    loadClients();
-  } else {
-    document.getElementById('createAlert').innerHTML = `<div class="alert alert-danger">${res?.message || 'Erreur'}</div>`;
-  }
-});
+    setTimeout(() => { closeModal('createModal'); loadClients(); }, 800);
+  } catch (err) { showAlert('createAlert', err.message, 'danger'); }
+}
+
+function editClient(id) {
+  const c = clients.find(x => x._id === id);
+  if (!c) return;
+  document.getElementById('editClientId').value = c._id;
+  document.getElementById('editName').value    = c.name || '';
+  document.getElementById('editCompany').value = c.company || '';
+  document.getElementById('editEmail').value   = c.email || '';
+  document.getElementById('editPhone').value   = c.phone || '';
+  document.getElementById('editAddress').value = c.address || '';
+  openModal('editModal');
+}
+
+async function updateClient(e) {
+  e.preventDefault();
+  const id = document.getElementById('editClientId').value;
+  const data = { name: document.getElementById('editName').value, company: document.getElementById('editCompany').value, email: document.getElementById('editEmail').value, phone: document.getElementById('editPhone').value, address: document.getElementById('editAddress').value };
+  try {
+    await apiCall(`/client/update/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+    showAlert('editAlert', 'Client mis à jour !', 'success');
+    setTimeout(() => { closeModal('editModal'); loadClients(); }, 800);
+  } catch (err) { showAlert('editAlert', err.message, 'danger'); }
+}
 
 async function deleteClient(id) {
   if (!confirm('Supprimer ce client ?')) return;
-  const res = await api('/client/delete/' + id, { method: 'DELETE' });
-  if (res) loadClients();
+  try { await apiCall(`/client/delete/${id}`, { method: 'DELETE' }); loadClients(); }
+  catch (e) { alert(e.message); }
 }
 
-function openModal(id) { document.getElementById(id).classList.add('active'); }
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  setTimeout(() => el.innerHTML = '', 4000);
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-loadClients();
+document.addEventListener('DOMContentLoaded', loadClients);
 </script>

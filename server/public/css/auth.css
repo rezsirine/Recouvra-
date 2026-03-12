@@ -1,0 +1,126 @@
+/* ============================================================
+   auth.css — Styles pour les pages de connexion / inscription
+   ============================================================ */
+
+.auth-body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #2563eb 100%);
+  min-height: 100vh;
+}
+
+/* ── Layout deux colonnes (login) ── */
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.auth-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  color: white;
+}
+
+.auth-left-content { max-width: 460px; }
+
+.auth-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+.auth-brand-icon {
+  width: 52px; height: 52px;
+  background: rgba(255,255,255,.15);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  backdrop-filter: blur(10px);
+}
+.auth-brand h1 { font-size: 28px; font-weight: 800; }
+
+.auth-left h2   { font-size: 32px; font-weight: 700; line-height: 1.3; margin-bottom: 16px; }
+.auth-left p    { opacity: .8; font-size: 16px; line-height: 1.7; margin-bottom: 32px; }
+
+.auth-features  { display: flex; flex-direction: column; gap: 14px; }
+.feature-item   { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+.feature-item i { color: #10b981; font-size: 18px; }
+
+.auth-right {
+  width: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: rgba(255,255,255,.04);
+  backdrop-filter: blur(20px);
+}
+
+/* ── Carte d'authentification ── */
+.auth-card {
+  background: white;
+  border-radius: 20px;
+  padding: 44px;
+  width: 100%;
+  box-shadow: 0 8px 30px rgba(0,0,0,.12);
+}
+
+.auth-card-header { margin-bottom: 28px; }
+.auth-card-header h2 { font-size: 24px; font-weight: 700; color: #1e3a5f; }
+.auth-card-header p  { color: #64748b; margin-top: 4px; }
+
+/* ── Layout centré (forgot / reset) ── */
+.auth-simple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+.auth-card-center { max-width: 420px; }
+
+.auth-icon-header { text-align: center; margin-bottom: 28px; }
+.icon-circle {
+  width: 70px; height: 70px;
+  background: linear-gradient(135deg, #1e3a5f, #2563eb);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; color: white; margin: 0 auto 16px;
+}
+.auth-icon-header h2 { font-size: 22px; font-weight: 700; color: #1e3a5f; }
+.auth-icon-header p  { color: #64748b; font-size: 14px; }
+
+.auth-form    { display: flex; flex-direction: column; gap: 18px; }
+.auth-divider { text-align: center; margin: 20px 0; color: #94a3b8; font-size: 13px; position: relative; }
+.auth-divider::before, .auth-divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: #e2e8f0; }
+.auth-divider::before { left: 0; }
+.auth-divider::after  { right: 0; }
+
+.auth-card-footer     { text-align: center; margin-top: 20px; }
+.auth-card-footer a   { color: #94a3b8; font-size: 12px; text-decoration: none; }
+.auth-card-footer a:hover { color: #2563eb; }
+
+.form-footer { display: flex; justify-content: space-between; align-items: center; }
+.checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #475569; }
+
+/* ── Password toggle ── */
+.input-icon-right { position: relative; }
+.input-icon-right .form-control { padding-right: 44px; }
+.toggle-password {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px;
+  transition: color .2s;
+}
+.toggle-password:hover { color: #2563eb; }
+
+/* ── Message succès ── */
+.success-message {
+  text-align: center; padding: 30px 20px;
+}
+.success-icon {
+  width: 64px; height: 64px; background: #f0fdf4;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; color: #10b981; margin: 0 auto 16px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .auth-left  { display: none; }
+  .auth-right { width: 100%; }
+}
