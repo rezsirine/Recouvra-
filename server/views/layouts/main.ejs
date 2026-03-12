@@ -3,13 +3,98 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><%= typeof title !== 'undefined' ? title + ' — Recouvra+' : 'Recouvra+' %></title>
+  <title><%= typeof title !== 'undefined' ? title : 'Recouvra+' %> — Recouvra+</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/layout.css" />
+  <link rel="stylesheet" href="/css/components.css" />
 </head>
 <body>
-  <%- body %>
-  <script src="/js/main.js"></script>
+<div class="app-container">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo"><i class="fas fa-shield-alt"></i></div>
+      <div class="brand-text">
+        <span class="brand-name">Recouvra+</span>
+        <span class="brand-sub">Gestion de recouvrement</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label">Principal</span>
+        <a href="/dashboard" class="nav-item <%= typeof page !== 'undefined' && page === 'dashboard' ? 'active' : '' %>">
+          <i class="fas fa-chart-pie"></i><span>Tableau de bord</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label">Gestion</span>
+        <a href="/clients" class="nav-item <%= typeof page !== 'undefined' && page === 'clients' ? 'active' : '' %>">
+          <i class="fas fa-users"></i><span>Clients</span>
+        </a>
+        <a href="/invoices" class="nav-item <%= typeof page !== 'undefined' && page === 'invoices' ? 'active' : '' %>">
+          <i class="fas fa-file-invoice-dollar"></i><span>Factures</span>
+        </a>
+        <a href="/recovery" class="nav-item <%= typeof page !== 'undefined' && page === 'recovery' ? 'active' : '' %>">
+          <i class="fas fa-tasks"></i><span>Recouvrement</span>
+        </a>
+      </div>
+      <% if (typeof user !== 'undefined' && (user.role === 'admin' || user.role === 'manager')) { %>
+      <div class="nav-section">
+        <span class="nav-label">Administration</span>
+        <a href="/users" class="nav-item <%= typeof page !== 'undefined' && page === 'users' ? 'active' : '' %>">
+          <i class="fas fa-user-cog"></i><span>Utilisateurs</span>
+        </a>
+      </div>
+      <% } %>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="sidebarAvatar">U</div>
+        <div class="user-details">
+          <span class="user-name" id="sidebarUserName">Chargement...</span>
+          <span class="user-role" id="sidebarUserRole">—</span>
+        </div>
+      </div>
+      <a href="/logout" class="btn-logout" title="Déconnexion"><i class="fas fa-sign-out-alt"></i></a>
+    </div>
+  </aside>
+
+  <!-- ══ CONTENU PRINCIPAL ══ -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="topbar-title">
+        <h1 class="page-title"><%= typeof title !== 'undefined' ? title : '' %></h1>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-icon" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="notification-dot"></span>
+        </button>
+        <div class="user-avatar-sm" id="topbarAvatar">U</div>
+      </div>
+    </header>
+
+    <!-- Contenu de la page injecté ici -->
+    <div class="content-wrapper">
+      <%- body %>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="/js/main.js"></script>
+<%- typeof script !== 'undefined' ? script : '' %>
 </body>
 </html>
