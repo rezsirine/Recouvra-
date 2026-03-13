@@ -18,43 +18,43 @@ const viewsRoute    = require("./routes/views.routes");
 const app  = express();
 const PORT = process.env.PORT || 5000;
 
-// ── Base de données ──
+// Base de données
 connectDB();
 
-// ── Middlewares globaux ──
+// Middlewares globaux
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ── Fichiers statiques ──
+// Fichiers statiques
 app.use("/css", express.static(path.join(__dirname, "public", "css")));
 app.use("/js",  express.static(path.join(__dirname, "public", "js")));
 app.use(express.static(path.join(__dirname, "public")));
 
-// ── EJS + Layouts ──
+// EJS + Layouts
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(expressLayouts);
 app.set("layout", "layouts/main");
 app.set("layout extractScripts", true);
 
-// ── Swagger ──
+// Swagger
 setupSwagger(app);
 
-// ── Routes vues (pages HTML) ──
+// Routes vues 
 app.use("/", viewsRoute);
 
-// ── Routes API ──
+// Routes API
 app.use("/api/user",     userRoute);
 app.use("/api/client",   clientRoute);
 app.use("/api/invoice",  invoiceRoute);
 app.use("/api/recovery", recoveryRoute);
 
-// ── Démarrage ──
+// Démarrage
 app.listen(PORT, () => {
-  console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
-  console.log(`📚 Swagger docs: http://localhost:${PORT}/api-docs`);
+  console.log(` Serveur démarré sur http://localhost:${PORT}`);
+  console.log(` Swagger : http://localhost:${PORT}/api-docs`);
 });
 
 module.exports = app;
