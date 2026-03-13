@@ -154,7 +154,7 @@ const updateProfile = async (req, res) => {
   try {
     const { name, email, phone_number } = req.body;
     
-    // Vérifier si l'email est déjà utilisé par quelqu'un d'autre
+    
     if (email) {
       const existingUser = await User.findOne({ 
         email, 
@@ -165,7 +165,7 @@ const updateProfile = async (req, res) => {
       }
     }
     
-    // Mettre à jour l'utilisateur
+    
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { name, email, phone_number },
@@ -187,16 +187,16 @@ const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     
-    // Récupérer l'utilisateur avec son mot de passe
+    
     const user = await User.findById(req.user.id).select('+password');
     
-    // Vérifier l'ancien mot de passe
+    
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
       return res.status(401).json({ message: "Mot de passe actuel incorrect" });
     }
     
-    // Mettre à jour le mot de passe
+    
     user.password = newPassword;
     await user.save();
     
@@ -207,7 +207,7 @@ const changePassword = async (req, res) => {
   }
 };
 
-// N'oubliez pas d'exporter les nouvelles fonctions
+
 module.exports = { 
   signUp, 
   loginByEmail, 
