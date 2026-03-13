@@ -1,3 +1,4 @@
+//  automatise avant de la sauvegarder 
 const invoiceStatusMiddleware = (schema) => {
   schema.pre('save', function(next) {
     const now = new Date();
