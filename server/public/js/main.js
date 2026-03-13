@@ -1,6 +1,4 @@
-/* ═══════════════════════════════════════════════
-   RECOUVRA+ — Frontend App (CORRIGÉ)
-═══════════════════════════════════════════════ */
+
 
 const API = '/api';
 
@@ -99,9 +97,9 @@ const typeLabel = (t) => {
   return `<span class="type-badge">${map[t] || t}</span>`;
 };
 
-// ═══════════════════════════════
+
 //  AUTH FORMS
-// ═══════════════════════════════
+
 
 let loginMode = 'email';
 
@@ -181,9 +179,9 @@ const handleReset = async (e) => {
   }
 };
 
-// ═══════════════════════════════
+
 //  DASHBOARD
-// ═══════════════════════════════
+
 
 const loadDashboard = async () => {
   try {
@@ -249,15 +247,13 @@ const loadDashboard = async () => {
   }
 };
 
-// ═══════════════════════════════
 //  CLIENTS
-// ═══════════════════════════════
+
 
 let clientsData = [];
 
 var loadClients = async () => {
   try {
-    // FIX: le controller retourne { success, count, data: [...] }
     const res = await apiFetch('/client/getAll');
     clientsData = res.data || [];
     renderClients(clientsData);
@@ -345,16 +341,13 @@ var deleteClient = async (id) => {
   } catch (err) { showToast(err.message, 'error'); }
 };
 
-// ═══════════════════════════════
 //  INVOICES
-// ═══════════════════════════════
 
 let invoicesData = [];
 let invoiceFilter = 'all';
 
 const loadInvoices = async () => {
   try {
-    // FIX: le controller retourne { success, count, data: [...] }
     const res = await apiFetch('/invoice/getAll');
     invoicesData = res.data || [];
     renderInvoices();
@@ -469,25 +462,23 @@ const registerPayment = async (e) => {
   } catch (err) { showToast(err.message, 'error'); }
 };
 
-// ═══════════════════════════════
 //  RECOVERY
-// ═══════════════════════════════
+
 
 let recoveryData = [];
 
 const loadRecovery = async () => {
   try {
-    // FIX: les deux retournent { success, data/count/byOutcome }
     const [actionsRes, stats] = await Promise.all([
       apiFetch('/recovery/getAll'),
       apiFetch('/recovery/stats')
     ]);
 
-    // FIX: extraire le tableau depuis .data
+    
     recoveryData = actionsRes.data || [];
     renderRecovery();
 
-    // stats retourne directement { total, byOutcome: { pending, successful, failed, rescheduled } }
+    
     document.getElementById('rTotal').textContent      = stats.total                  ?? 0;
     document.getElementById('rPending').textContent    = stats.byOutcome?.pending     ?? 0;
     document.getElementById('rSuccessful').textContent = stats.byOutcome?.successful  ?? 0;
@@ -567,13 +558,11 @@ const deleteAction = async (id) => {
   } catch (err) { showToast(err.message, 'error'); }
 };
 
-// ═══════════════════════════════
-//  HELPERS — populate selects
-// ═══════════════════════════════
+
+
 
 const loadClientsForSelect = async (selectId) => {
   try {
-    // FIX: extraire .data
     const res = await apiFetch('/client/getAll');
     const clients = res.data || [];
     const sel = document.getElementById(selectId);
@@ -587,7 +576,6 @@ const loadClientsForSelect = async (selectId) => {
 
 const loadInvoicesForSelect = async (selectId) => {
   try {
-    // FIX: extraire .data des deux réponses
     const [r1, r2] = await Promise.all([
       apiFetch('/invoice/getAll?status=overdue'),
       apiFetch('/invoice/getAll?status=unpaid')
@@ -600,23 +588,20 @@ const loadInvoicesForSelect = async (selectId) => {
   } catch (_) {}
 };
 
-// ═══════════════════════════════
 //  LOGOUT
-// ═══════════════════════════════
+
 
 const logout = () => {
   removeToken();
   location.href = '/login';
 };
 
-// ═══════════════════════════════
-//  INIT
-// ═══════════════════════════════
+
 
 document.addEventListener('DOMContentLoaded', () => {
   requireAuth();
 
-  // Charger le nom de l'utilisateur dans la topbar
+  
   const userNameEl = document.getElementById('userName');
   if (userNameEl && getToken()) {
     apiFetch('/user/me').then(u => {
@@ -624,7 +609,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(() => {});
   }
 
-  // Toggle sidebar mobile
   const toggleBtn = document.getElementById('sidebarToggle');
   const sidebar   = document.querySelector('.sidebar');
   if (toggleBtn && sidebar) {

@@ -8,18 +8,18 @@ const signToken = (id, role) =>
     expiresIn: process.env.JWT_EXPIRE || "7d",
   });
 
-// Dans user.controller.js - fonction signUp
+
 const signUp = async (req, res) => {
   try {
     const { name, email, phone_number, password, role } = req.body;
     
-    // Vérifier si l'utilisateur existe déjà
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Cet email est déjà utilisé" });
     }
     
-    // Créer l'utilisateur
+   
     const user = await User.create({
       name,
       email,
@@ -28,17 +28,17 @@ const signUp = async (req, res) => {
       role: role || "agent"
     });
     
-    // Générer le token
+  
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || "secret",
       { expiresIn: process.env.JWT_EXPIRE || "7d" }
     );
     
-    // ✅ RENVOYER LE TOKEN DANS LA RÉPONSE
+   
     res.status(201).json({
       message: "Utilisateur créé avec succès",
-      token: token,  // ← Le token doit être ici
+      token: token,
       user: {
         id: user._id,
         name: user.name,

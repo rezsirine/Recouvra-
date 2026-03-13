@@ -1,6 +1,4 @@
-/* ═══════════════════════════════════════════════
-   RECOUVRA+ — Frontend App
-═══════════════════════════════════════════════ */
+
 
 const API = '/api';
 
@@ -92,9 +90,9 @@ const typeLabel = (t) => {
   return `<span class="type-badge">${map[t] || t}</span>`;
 };
 
-// ═══════════════════════════════
+
 //  AUTH FORMS
-// ═══════════════════════════════
+
 
 // --- Login ---
 let loginMode = 'email';
@@ -182,9 +180,9 @@ const handleReset = async (e) => {
   }
 };
 
-// ═══════════════════════════════
+
 //  DASHBOARD
-// ═══════════════════════════════
+
 
 const loadDashboard = async () => {
   try {
@@ -240,9 +238,9 @@ const loadDashboard = async () => {
   }
 };
 
-// ═══════════════════════════════
+
 //  CLIENTS
-// ═══════════════════════════════
+
 
 let clientsData = [];
 
@@ -332,9 +330,9 @@ const deleteClient = async (id) => {
   } catch (err) { showToast(err.message, 'error'); }
 };
 
-// ═══════════════════════════════
+
 //  INVOICES
-// ═══════════════════════════════
+
 
 let invoicesData = [];
 let invoiceFilter = 'all';
