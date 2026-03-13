@@ -47,15 +47,54 @@
   </nav>
 
   <div class="sidebar-footer">
-    <% if (typeof user !== 'undefined') { %>
     <div class="user-info">
-      <div class="user-avatar"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></div>
-      <div class="user-details">
-        <span class="user-name"><%= user.name %></span>
-        <span class="user-role badge-role-<%= user.role %>"><%= user.role %></span>
-      </div>
+      <div class="user-avatar" id="userAvatar">U</div>
     </div>
-    <% } %>
     <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i></a>
   </div>
 </aside>
+
+<script>
+window.addEventListener('load', function() {
+  console.log(' Sidebar: window.load');
+  
+  // Récupérer le token
+  const token = localStorage.getItem('token');
+  console.log(' Token:', token ? token.substring(0, 15) + '...' : 'Pas de token');
+  
+  if (!token) {
+    console.log(' Pas de token');
+    document.getElementById('userName').textContent = 'Non connecté';
+    return;
+  }
+  
+  fetch('/api/user/me', {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  })
+  .then(response => {
+    console.log(' Status réponse:', response.status);
+    if (!response.ok) {
+      throw new Error('Erreur ' + response.status);
+    }
+    return response.json();
+  })
+  .then(user => {
+    console.log(' Utilisateur :', user);
+    
+    // Mettre à jour les éléments
+    document.getElementById('userName').textContent = user.name || 'Utilisateur';
+    document.getElementById('userRole').textContent = user.role || 'agent';
+    document.getElementById('userAvatar').textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+    
+    // Ajouter la classe de rôle
+    document.getElementById('userRole').className = 'user-role badge-role-' + (user.role || 'agent');
+  })
+  .catch(error => {
+    console.error('❌ Erreur:', error);
+    document.getElementById('userName').textContent = 'Erreur';
+    document.getElementById('userRole').textContent = '---';
+  });
+});
+</script>
