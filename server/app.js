@@ -15,31 +15,29 @@ const viewsRoute    = require("./routes/views.routes");
 
 const app = express();
 
-// ── Middlewares globaux ──
+//Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ── Fichiers statiques ──
 app.use("/css", express.static(path.join(__dirname, "public", "css")));
 app.use("/js",  express.static(path.join(__dirname, "public", "js")));
 app.use(express.static(path.join(__dirname, "public")));
 
-// ── EJS + Layouts ──
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(expressLayouts);
 app.set("layout", "layouts/main");
 app.set("layout extractScripts", true);
 
-// ── Swagger ──
+//Swagger
 setupSwagger(app);
 
-// ── Routes vues ──
+//Routes vues
 app.use("/", viewsRoute);
 
-// ── Routes API ──
+//Routes API 
 app.use("/api/user",     userRoute);
 app.use("/api/client",   clientRoute);
 app.use("/api/invoice",  invoiceRoute);
