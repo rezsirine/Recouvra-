@@ -10,8 +10,246 @@
       <i class="fas fa-bell"></i>
       <span class="notification-dot"></span>
     </button>
-    <div class="topbar-user">
-      <div class="user-avatar-sm"><%= typeof user !== 'undefined' && user.name ? user.name.charAt(0).toUpperCase() : 'U' %></div>
+    
+    <!-- Menu profil SIMPLE -->
+    <div class="profile-menu-container">
+      <div class="topbar-user" id="profileBtn" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+        <div class="user-avatar-sm" id="avatarDisplay">U</div>
+        <span class="user-name" id="nameDisplay">Chargement...</span>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      
+      <div class="profile-dropdown" id="profileDropdown" style="display:none; position:absolute; right:0; background:white; border:1px solid #ddd; border-radius:8px; width:200px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000;">
+        <div style="padding:12px; border-bottom:1px solid #eee;">
+          <strong id="dropdownName">Chargement...</strong><br>
+          <small id="dropdownEmail">chargement...</small>
+        </div>
+        <a href="#" id="profileLink" style="display:block; padding:10px 12px; text-decoration:none; color:#333;">
+          <i class="fas fa-user-circle"></i> Mon profil
+        </a>
+        <a href="#" id="settingsLink" style="display:block; padding:10px 12px; text-decoration:none; color:#333;">
+          <i class="fas fa-cog"></i> Paramètres
+        </a>
+        <div style="border-top:1px solid #eee;"></div>
+        <a href="/logout" style="display:block; padding:10px 12px; text-decoration:none; color:#dc3545;">
+          <i class="fas fa-sign-out-alt"></i> Déconnexion
+        </a>
+      </div>
     </div>
   </div>
 </header>
+
+<!-- Modals  -->
+<div class="modal-overlay" id="profileModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:2000;">
+  <div style="background:white; max-width:500px; margin:50px auto; padding:20px; border-radius:12px;">
+    <h3>Mon profil</h3>
+    <div id="profileAlert"></div>
+    <form id="profileForm">
+      <div style="margin-bottom:10px;">
+        <label>Nom</label>
+        <input type="text" id="profileName" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+      </div>
+      <div style="margin-bottom:10px;">
+        <label>Email</label>
+        <input type="email" id="profileEmail" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+      </div>
+      <div style="margin-bottom:10px;">
+        <label>Téléphone</label>
+        <input type="tel" id="profilePhone" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+      </div>
+      <div style="margin-bottom:10px;">
+        <label>Rôle</label>
+        <input type="text" id="profileRole" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;" readonly>
+      </div>
+      <div style="text-align:right;">
+        <button type="button" onclick="closeProfileModal()" style="padding:8px 16px; margin-right:8px;">Annuler</button>
+        <button type="submit" style="padding:8px 16px; background:#1e3a5f; color:white; border:none; border-radius:4px;">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+console.log(' Navbar script chargé');
+
+// Attendre que le DOM soit prêt
+document.addEventListener('DOMContentLoaded', function() {
+  console.log(' DOM chargé');
+  
+  // Éléments
+  const profileBtn = document.getElementById('profileBtn');
+  const profileDropdown = document.getElementById('profileDropdown');
+  const profileLink = document.getElementById('profileLink');
+  const settingsLink = document.getElementById('settingsLink');
+  
+  console.log(' Éléments trouvés:', {
+    profileBtn: !!profileBtn,
+    profileDropdown: !!profileDropdown,
+    profileLink: !!profileLink,
+    settingsLink: !!settingsLink
+  });
+  
+  // Toggle dropdown
+  if (profileBtn && profileDropdown) {
+    profileBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log(' Clic sur profil');
+      
+      if (profileDropdown.style.display === 'none' || profileDropdown.style.display === '') {
+        profileDropdown.style.display = 'block';
+        console.log(' Dropdown ouvert');
+      } else {
+        profileDropdown.style.display = 'none';
+        console.log(' Dropdown fermé');
+      }
+    });
+  }
+  
+  // Fermer en cliquant ailleurs
+  document.addEventListener('click', function(e) {
+    if (profileDropdown && !profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+      profileDropdown.style.display = 'none';
+    }
+  });
+  
+  // Lien profil
+  if (profileLink) {
+    profileLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log(' Clic sur Mon profil');
+      profileDropdown.style.display = 'none';
+      openProfileModal();
+    });
+  }
+  
+  // Lien paramètres
+  if (settingsLink) {
+    settingsLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log(' Clic sur Paramètres');
+      profileDropdown.style.display = 'none';
+      alert('Page des paramètres (à venir)');
+    });
+  }
+  
+  // Charger les infos utilisateur
+  loadUserInfo();
+});
+
+// Charger les infos utilisateur
+async function loadUserInfo() {
+  console.log(' Chargement user');
+  
+  const token = localStorage.getItem('token');
+  console.log(' Token:', token ? 'Présent' : 'Absent');
+  
+  if (!token) {
+    document.getElementById('nameDisplay').textContent = 'Non connecté';
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/user/me', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    console.log(' Réponse:', response.status);
+    
+    if (!response.ok) throw new Error('Erreur ' + response.status);
+    
+    const user = await response.json();
+    console.log(' Utilisateur:', user);
+    
+    // Mettre à jour l'affichage
+    document.getElementById('nameDisplay').textContent = user.name || 'Utilisateur';
+    document.getElementById('avatarDisplay').textContent = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+    document.getElementById('dropdownName').textContent = user.name || 'Utilisateur';
+    document.getElementById('dropdownEmail').textContent = user.email || '';
+    
+    // Stocker pour le modal
+    sessionStorage.setItem('userInfo', JSON.stringify(user));
+    
+  } catch (error) {
+    console.error(' Erreur:', error);
+    document.getElementById('nameDisplay').textContent = 'Erreur';
+  }
+}
+
+// Ouvrir modal profil
+function openProfileModal() {
+  console.log(' Ouverture modal profil');
+  
+  const user = JSON.parse(sessionStorage.getItem('userInfo') || '{}');
+  console.log(' Données:', user);
+  
+  document.getElementById('profileName').value = user.name || '';
+  document.getElementById('profileEmail').value = user.email || '';
+  document.getElementById('profilePhone').value = user.phone_number || '';
+  document.getElementById('profileRole').value = user.role || 'agent';
+  
+  document.getElementById('profileModal').style.display = 'block';
+}
+
+// Fermer modal profil
+function closeProfileModal() {
+  document.getElementById('profileModal').style.display = 'none';
+}
+
+// Sauvegarder profil
+document.getElementById('profileForm')?.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const token = localStorage.getItem('token');
+  const data = {
+    name: document.getElementById('profileName').value,
+    email: document.getElementById('profileEmail').value,
+    phone_number: document.getElementById('profilePhone').value
+  };
+  
+  try {
+    const response = await fetch('/api/user/update-profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) throw new Error(result.message);
+    
+    document.getElementById('profileAlert').innerHTML = '<div style="background:#d4edda; color:#155724; padding:10px; border-radius:4px;">Profil mis à jour !</div>';
+    
+    setTimeout(() => {
+      closeProfileModal();
+      loadUserInfo();
+    }, 1500);
+    
+  } catch (error) {
+    document.getElementById('profileAlert').innerHTML = `<div style="background:#f8d7da; color:#721c24; padding:10px; border-radius:4px;">${error.message}</div>`;
+  }
+});
+</script>
+
+<style>
+.profile-menu-container {
+  position: relative;
+  display: inline-block;
+}
+.topbar-user {
+  padding: 5px 10px;
+  border-radius: 30px;
+}
+.topbar-user:hover {
+  background: rgba(0,0,0,0.05);
+}
+.profile-dropdown {
+  margin-top: 10px;
+}
+.profile-dropdown a:hover {
+  background: #f5f5f5;
+}
+</style>s

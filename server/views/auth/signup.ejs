@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <!-- Colonne droite : formulaire d'inscription -->
+    <!--  formulaire d'inscription -->
     <div class="auth-right">
       <div class="auth-card">
         <div class="auth-card-header">
@@ -39,7 +39,7 @@
           <p>Rejoignez Recouvra+ dès maintenant</p>
         </div>
 
-        <!-- Alerte erreur/succès -->
+        <!-- Alerte -->
         <div id="alertMsg" class="alert alert-danger" style="display:none"></div>
 
         <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
@@ -119,7 +119,7 @@
       }
     }
 
-    // UNE SEULE FONCTION handleSignup - celle qui redirige vers LOGIN
+    //  handleSignup  qui redirige vers LOGIN
     async function handleSignup(e) {
       e.preventDefault();
       
@@ -147,7 +147,7 @@
           throw new Error('Le mot de passe doit contenir au moins 6 caractères');
         }
         
-        console.log('📤 Envoi des données...', { name, email, phone, role });
+        console.log(' Envoi des données...', { name, email, phone, role });
         
         const res = await fetch('/api/user/signup', {
           method: 'POST',
@@ -162,11 +162,10 @@
         });
         
         const data = await res.json();
-        console.log('📥 Réponse reçue:', data);
+        console.log(' Réponse reçue:', data);
         
         if (!res.ok) throw new Error(data.message || 'Erreur lors de l\'inscription');
         
-        // ✅ Message de succès
         alertMsg.className = 'alert alert-success';
         alertMsg.innerHTML = `
           <i class="fas fa-check-circle"></i>
@@ -177,20 +176,17 @@
         `;
         alertMsg.style.display = 'flex';
         
-        // ✅ NE PAS STOCKER LE TOKEN
-        // localStorage.setItem('token', data.token); ← Commenté !
         
-        // ✅ Nettoyer le formulaire
+        // Nettoyer le formulaire
         document.getElementById('signupForm').reset();
         
-        // ✅ Rediriger vers LOGIN après 2 secondes
         setTimeout(() => {
-          console.log('🚀 Redirection vers /login');
+          console.log(' Redirection vers /login');
           window.location.href = '/login';
         }, 2000);
         
       } catch (err) {
-        console.error('❌ Erreur inscription:', err);
+        console.error('Erreur inscription:', err);
         
         alertMsg.className = 'alert alert-danger';
         alertMsg.innerHTML = `

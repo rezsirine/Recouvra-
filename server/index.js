@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
-    console.log(`📚 Swagger docs: http://localhost:${PORT}/api-docs`);
+    console.log(` Serveur démarré sur http://localhost:${PORT}`);
+    console.log(` Swagger docs: http://localhost:${PORT}/api-docs`);
   });
 });

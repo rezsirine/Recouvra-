@@ -1,14 +1,16 @@
 const jwt = require("jsonwebtoken");
 const User = require("../model/user");
 
+
 const protect = async (req, res, next) => {
   try {
     let token;
 
-    
+    // Depuis le header Authorization (format Bearer)
     if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
       token = req.headers.authorization.split(" ")[1];
     }
+    // Depuis les cookies
     else if (req.cookies && req.cookies.token) {
       token = req.cookies.token;
     }
@@ -27,7 +29,7 @@ const protect = async (req, res, next) => {
     }
 
     req.user = user;
-    next();
+    next();// Passage au middleware
   } catch (error) {
     return res.status(401).json({ message: "Token invalide ou expiré." });
   }
@@ -37,7 +39,7 @@ const protect = async (req, res, next) => {
 const restrictTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Accès refusé. Rôle insuffisant." });
+      return res.status(403).json({ message: "Accès refusé" });
     }
     next();
   };
