@@ -16,9 +16,16 @@ const viewsRoute    = require("./routes/views.routes");
 const app = express();
 
 //Middlewares
+//  navigateurs accéder à l'API 
 app.use(cors());
+
+// Parse le JSON dans  requêtes 
 app.use(express.json());
+
+//  Parse les formulaires HTML
 app.use(express.urlencoded({ extended: true }));
+
+// Parse les cookies 
 app.use(cookieParser());
 
 app.use("/css", express.static(path.join(__dirname, "public", "css")));
