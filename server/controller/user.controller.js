@@ -8,7 +8,7 @@ const signToken = (id, role) =>
     expiresIn: process.env.JWT_EXPIRE || "7d",
   });
 
-// Dans user.controller.js - fonction signUp
+//  user signUp
 const signUp = async (req, res) => {
   try {
     const { name, email, phone_number, password, role } = req.body;
@@ -35,10 +35,10 @@ const signUp = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRE || "7d" }
     );
     
-    // ✅ RENVOYER LE TOKEN DANS LA RÉPONSE
+    //  RENVOYER LE TOKEN DANS LA RÉPONSE
     res.status(201).json({
       message: "Utilisateur créé avec succès",
-      token: token,  // ← Le token doit être ici
+      token: token,  
       user: {
         id: user._id,
         name: user.name,
@@ -141,7 +141,82 @@ const getAllUsers = async (req, res) => {
 };
 
 const getMe = async (req, res) => {
-  res.json(req.user);
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-module.exports = { signUp, loginByEmail, loginByPhoneNumber, handleToken, forgotPassword, resetPassword, getAllUsers, getMe };
+// Mettre à jour le profil
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone_number } = req.body;
+    
+    // Vérifier si l'email est déjà utilisé par quelqu'un d'autre
+    if (email) {
+      const existingUser = await User.findOne({ 
+        email, 
+        _id: { $ne: req.user.id } 
+      });
+      if (existingUser) {
+        return res.status(400).json({ message: "Cet email est déjà utilisé" });
+      }
+    }
+    
+    // Mettre à jour l'utilisateur
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { name, email, phone_number },
+      { new: true, runValidators: true }
+    ).select('-password');
+    
+    res.json({ 
+      message: "Profil mis à jour avec succès", 
+      user 
+    });
+    
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Changer le mot de passe
+const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    // Récupérer l'utilisateur avec son mot de passe
+    const user = await User.findById(req.user.id).select('+password');
+    
+    // Vérifier l'ancien mot de passe
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Mot de passe actuel incorrect" });
+    }
+    
+    // Mettre à jour le mot de passe
+    user.password = newPassword;
+    await user.save();
+    
+    res.json({ message: "Mot de passe changé avec succès" });
+    
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// N'oubliez pas d'exporter les nouvelles fonctions
+module.exports = { 
+  signUp, 
+  loginByEmail, 
+  loginByPhoneNumber, 
+  handleToken, 
+  forgotPassword, 
+  resetPassword, 
+  getAllUsers, 
+  getMe,
+  updateProfile,      
+  changePassword      
+};
