@@ -2,6 +2,20 @@
   
   "dependencies": {
     "mongoose": "^9.2.3"
-  }
+  },
   
+  "scripts": {
+    "test": "jest --testEnvironment node --forceExit",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "globalSetup": "./__tests__/globalSetup.js",
+    "globalTeardown": "./__tests__/globalTeardown.js",
+    "setupFilesAfterEnv": ["./__tests__/setupFilesAfterEnv.js"],
+    "testTimeout": 30000,
+    "verbose": true
+  }
 }
+  
